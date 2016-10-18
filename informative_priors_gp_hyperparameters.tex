@@ -106,29 +106,18 @@
 \maketitle
 
 \begin{abstract}
-  Gaussian process priors are a broad class of priors over functions, and as
-  such, are a rich set of priors over conditional mean functions in Bayesian
-  nonparameteric regression models. When faced with data, the analyst must make
-  a choice as to how to infer the hyperparameters from the given dataset.
-  However, literature on Gaussian processes elides this inferential step,
-  typically settling on using the dataset once to use point-estimation
-  techniques for the hyperparameters, and then using the dataset again to infer
-  the resulting posterior conditional mean functions. Given that our
-  probability of correctly picking our hyperparameters with finite data is
-  exactly zero, we prefer to take a Bayesian approach to hyperparameter
-  inference by placing priors over our hyperparameters and integrating over
-  uncertainty.  This comes with its own problems, as kernel hyperparameters are
-  weakly identified. This can lead to thick tails, which can hinder our ability
-  to generate a proper Bayesian estimator under the MC-CLT. We formalize the
-  characteristics of priors that lead to well-behaved posteriors over
-  hyperparameters and find that weakly informative priors on length-scale
-  parameters that limit probability mass at very large lenth-scales and very
-  small length-scales are empirically sufficient for generating well-behaved
-  MCMC chains in Stan. This follows logically from the limiting behavior of
+  Gaussian processes can be understood as measures over functions, and as such,
+  can be used as a rich prior for conditional mean functions in Bayesian
+  nonparameteric regression models. Estimating hyperparameters in kernel
+  functions is a thorny problem because these parameters are weakly identified
+  by data. We derive a principled procedure to specify priors for
+  hyperparameters in exponentiated quadratic kernels that places soft
+  constraints the space of functions explored by the Gaussian process
+  regression model. Our procedure follows logically from the limiting behavior of
   Gaussian processes as length-scale tends to large (small) values, and from
   the conditions under which probability densities admit geometrically ergodic
   Hamiltonian Monte Carlo chains. 
-\end{abstract}
+ \end{abstract}
 
 \section{Introduction}
 
@@ -136,12 +125,12 @@ Gaussian processes have become part of the statistician's toolkit due in large
 part to the development of fast, scalable matrix libraries, processor speed
 improvements and the proliferation of software packages such as GPy, GPstuff,
 and Stan. The typical regression setting for observed univariate data
-$\mathbf{y} \in \R, \mathbf{X} \in \R^M$, is:
+$\mathbf{y} \in \R, \mathbf{X} \in \R^M$, is (adopting the notation of Flaxman et. al):
 
 \begin{align*}
-  \alpha & \sim p(\mathbf{\alpha} | \theta_\mathbf{\alpha}) \\
-  l & \sim g(\mathbf{l} | \theta_l) \\
-  f(\mathbf{x}) & \sim GP\lp \mathbf{f}(\mathbf{x}) |\, \mu(\mathbf{x}), K(\mathbf{x}, \mathbf{x} | \mathbf{\alpha},\, l) \rp \\
+  \theta & \sim p(\Theta | \theta_\mathbf{\alpha}) \\ 
+  f(\mathbf{x}) & \sim GP\lp \mathbf{f}(\mathbf{x})
+  |\, \mu(\mathbf{x}), K_\theta(\mathbf{x}, \mathbf{x}) \rp \\
 \end{align*}
 
 Data is then generated according to:
@@ -152,29 +141,21 @@ Data is then generated according to:
 \end{align*}
 
 where $GP$ is a stochastic process completely specified its mean vector $\mu$
-and its covariance matrix $K(\mathbf{\alpha}, \, l)$. With $\mathbf{\alpha}$ and $l$ fixed,
-inference of $f(\mathbf{x} | \, \mathbf{Y}, \mathbf{\alpha}, l)$ is straightforward:
+and its covariance matrix $K(\theta)$. With $\theta$ fixed,
+inference of $f(\mathbf{x} | \, \mathbf{Y}, \theta)$ is straightforward:
 
 \begin{align*}
-        \begin{pmatrix}
-          f\\
-        \mathbf{y} \\
-        \end{pmatrix}
-        & \sim \mathcal{N}
-        \lp
-        \begin{pmatrix}
-          \mathbf{0} \\
-           \mathbf{0}
-	\end{pmatrix} ,\,\,
-	\begin{pmatrix}
-    K(\mathbf{x},\mathbf{x} | \mathbf{\alpha}, l) & K(\mathbf{x},\mathbf{x} | \mathbf{\alpha}, l)  \\
-    K(\mathbf{x},\mathbf{x} | \mathbf{\alpha}, l) &  K(\mathbf{x},\mathbf{x} | \mathbf{\alpha}, l) + \sigma ^ 2 \mathbf{I}\\
-	\end{pmatrix}
-	\rp
+      \begin{pmatrix} f\\ \mathbf{y} \\ \end{pmatrix} & \sim \mathcal{N} \lp
+\begin{pmatrix} \mathbf{0} \\ \mathbf{0} \end{pmatrix} ,\,\, \begin{pmatrix}
+  K_\theta(\mathbf{x},\mathbf{x}) & K_\theta(\mathbf{x},\mathbf{x})  \\
+  K_\theta(\mathbf{x},\mathbf{x}) &  K_\theta(\mathbf{x},\mathbf{x}) + \sigma ^
+  2 \mathbf{I}\\ \end{pmatrix} \rp \\ f & \sim
+  \mathcal{N}(K_\theta(\mathbf{x},\mathbf{x})(K_\theta(\mathbf{x},\mathbf{x}) +
+  \sigma ^ 2 \mathbf{I})^{-1}\mathbf{y},\\ & K_\theta(\mathbf{x},\mathbf{x}) -
+  (K_\theta(\mathbf{x},\mathbf{x}) + \sigma ^ 2 \mathbf{I})^{-1})
 \end{align*}
 
-
-While the software machinery to fit GPs are abundant, there is a dearth of
+While the software machinery to fit GPs is abundant, there is a dearth of
 information on the decisions that must go into fitting a Gaussian process on
 data, one of the most important of which is how to learn kernel
 hyperparameters, $\alpha$, the marginal variance of the stochastic process and
@@ -189,11 +170,11 @@ the marginal likelihood:
 \end{align*}
 
 R \& W note the problems with maximizing the marginal likelihood. The objective
-function can be multimodal, and also have areas where the objection function
+function can be multimodal, and can have areas where the objection function
 surface is nearly flat. This isn't surprising given the structure of kernels
 like the exponentiated quadratic kernel or the Matern kernel. These kernels
 require learning an amplitude parameter and a characteristic
-length-scaleparameter.
+length-scale parameter.
 
 Give examples of both kernels and show how alpha and length are conflated in
 all observable stats of draws from the GP, like number of upcrossings, and
@@ -206,16 +187,15 @@ posterior estitmate of the conditional mean function is understated.  Moreover,
 and perhaps, most importantly, given our finite sample size, we will not
 recover the true hyperparameters in any setting. 
 
-We have practical considerations too. Focusing on point estimates of our
-hyperparameters 
+We have practical considerations too. As the gaussian process prior with either
+of these kernels admits nonlinear functions, it is important to be able to
+control the nonlinearity in the functions admitted by the prior. 
 
-As the gaussian process prior with either of these kernels admits nonlinear
-functions, it is important to be able to control the nonlinearity in the
-functions admitted by the prior. More importantly, 
-R\&W prove that 
+Choosing a point estimates of our
+hyperparameters leads to one sample function, 
 
-
-
+More
+importantly, R\&W prove that 
 
 Stein explores finite sample theory as to how misspecification of Gaussian
 process kernels affects mean-square error compared to the true process.
