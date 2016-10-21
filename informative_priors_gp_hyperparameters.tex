@@ -108,15 +108,12 @@
 \begin{abstract}
   Gaussian processes can be understood as measures over functions, and as such,
   can be used as a rich prior for conditional mean functions in Bayesian
-  nonparameteric regression models. Estimating hyperparameters in kernel
-  functions is a thorny problem because these parameters are weakly identified
-  by data. We derive a principled procedure to specify priors for
-  hyperparameters in exponentiated quadratic kernels that places soft
-  constraints the space of functions explored by the Gaussian process
-  regression model. Our procedure follows logically from the limiting behavior of
-  Gaussian processes as length-scale tends to large (small) values, and from
-  the conditions under which probability densities admit geometrically ergodic
-  Hamiltonian Monte Carlo chains. 
+  nonparameteric regression models. However, sampling from the joint posterior
+  density of the length scale and marginal variance hyperparameters is
+  ill-posed because of the extreme flexibility of Gaussian process priors. We
+  develop a principled approach to specifying informative priors for length
+  scale hyperparameters that impose soft constraints on the space of functions
+  represented by the Gaussian process prior. 
  \end{abstract}
 
 \section{Introduction}
@@ -125,18 +122,12 @@ Gaussian processes have become part of the statistician's toolkit due in large
 part to the development of fast, scalable matrix libraries, processor speed
 improvements and the proliferation of software packages such as GPy, GPstuff,
 and Stan. The typical regression setting for observed univariate data
-$\mathbf{y} \in \R, \mathbf{X} \in \R^M$, is (adopting the notation of Flaxman et. al):
+$y_i \in \R, x_i \in \R^M\, i \in {1,\dots,n}$:
 
 \begin{align*}
-  \theta & \sim p(\Theta | \theta_\mathbf{\alpha}) \\ 
-  f(\mathbf{x}) & \sim GP\lp \mathbf{f}(\mathbf{x})
-  |\, \mu(\mathbf{x}), K_\theta(\mathbf{x}, \mathbf{x}) \rp \\
-\end{align*}
-
-Data is then generated according to:
-
-\begin{align*}
-  X_i & \sim p(\mathbf{X} | \phi) \\
+  \theta & \sim p(\Theta | \phi) \\
+  f(x) & \sim GP\lp F(x) |\, \mu(x),
+  K_\theta(x, x) \rp \\
   y_i & \sim \mathcal{N}\lp \mathbf{y} | \, f(\mathbf{x}), \sigma^2 \rp \forall i \\
 \end{align*}
 
@@ -191,11 +182,9 @@ We have practical considerations too. As the gaussian process prior with either
 of these kernels admits nonlinear functions, it is important to be able to
 control the nonlinearity in the functions admitted by the prior. 
 
-Choosing a point estimates of our
-hyperparameters leads to one sample function, 
+Choosing a point estimates of our hyperparameters leads to one sample function, 
 
-More
-importantly, R\&W prove that 
+More importantly, R\&W prove that 
 
 Stein explores finite sample theory as to how misspecification of Gaussian
 process kernels affects mean-square error compared to the true process.
@@ -210,6 +199,15 @@ the pathologies of different prior formulations.
 
 
 Improper learning of $\theta$ can yield poor out-of-sample forecasts 
+\section{Introduction}
+
+
+
+
+
+
+
+
 \subsection{Style}
 
 Papers to be submitted to NIPS 2016 must be prepared according to the
