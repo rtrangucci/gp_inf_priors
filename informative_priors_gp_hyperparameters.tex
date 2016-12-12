@@ -158,8 +158,8 @@ parameters in 12 different data generating processes, using techniques from
 Gaussian process regression model in order to elucidate the pathologies
 inherent in posterior inference over kernel hyperparameters. Additionally, we
 aspire to develop a coherent framework to choose weakly informative priors that
-can effectively regularize nonidentifiabilities. It is important to note that
-GPs in higher-dimensional spaces will likely display different idiosyncracies
+can effectively regularize unidentifiabilities. It is important to note that
+GPs in higher-dimensional spaces will likely display different idiosyncrasies
 than observed in the low-dimensional setting and these warrant further study.
 
 In section \ref{background} we define the 1-D Gaussian process regression setting,
@@ -173,70 +173,56 @@ of our experiments. Stan code is presented in the appendix.
 \subsection{Gaussian processes regression}
 
 The typical regression setting for observed univariate data, as presented in \citet{flaxman2015fast},
-
 $y_i \in \R, x_i \in \R^M\, i \in {1,\dots,n}$:
-
 \begin{align*}
   \theta & \sim g(\phi) \\
   f(x) & \sim \text{GP}\lp \mu(x),
   K_\theta(x, x) \rp \\
   y_i & \sim \mathcal{N}\lp f(x_i), \delta \rp \forall i \\
 \end{align*}
-
 where $\text{GP}$ is a stochastic process from which finite-sample realizations are
 multivariate Gaussian, and which is completely specified its mean vector $\mu$
 and its covariance matrix $K_\theta(x, x)$. The $i, j$ th
 element of $K_\theta(x, x)$:
-
 \begin{align*}
   \text{cov}(f(x_i), f(x_j)) = k(x_i, x_j | \theta) 
 \end{align*}
-
 We focus on the squared exponential kernel, where $\theta$ comprises
 two hyperparameters, $\ell$, the length-scale, and $\alpha$, the marginal
 standard deviation:
-
 \begin{align} \label{kern}
   k(x_i, x_j | \alpha, \ell) = \alpha^2 
 \exp \left(
 	- \dfrac{1}{2\ell^2} (x_{i} - x_{j})^2
 \right)
 \end{align}
-
 With $\ell$ and $\alpha$ fixed, inference of $f(x | \, \mathbf{y}, \theta)$ is
 straightforward, with $f$ and $\mathbf{y}$ jointly normally distributed:
 %put arrow above y and x to indicate vector of x and y $$:
-
 \begin{align*} \begin{pmatrix} f\\ \mathbf{y} \\ \end{pmatrix} \sim
 \mathcal{N} \lp \begin{pmatrix} \mathbf{0} \\ \mathbf{0} \end{pmatrix} ,\,\,
   \begin{pmatrix} K_\theta &
   K_\theta  \\ K_\theta &
   K_\theta + \delta ^ 2 \mathbf{I}\\ \end{pmatrix} \rp
 \end{align*}
-
 We can derive $p(f | \mathbf{y})$ from the properties of the conditional normal
 distribution: 
-
 \begin{align*}
   f \sim
   \mathcal{N}(K_\theta  (K_\theta + \delta ^ 2 \mathbf{I})^{-1}\mathbf{y},  
   K_\theta - K_\theta (K_\theta + \delta ^ 2 \mathbf{I})^{-1}K_\theta)
 \end{align*}
-
 Out-of-sample predictions are generated similarly:
-
 \begin{align*} 
   \mathbf{\tilde{y}} \sim
   \mathcal{N}(&K_\theta(\mathbf{\tilde{x}},\mathbf{x}) (K_\theta(\mathbf{x},\mathbf{x}) +
   \delta ^ 2 \mathbf{I})^{-1}\mathbf{y},  
    \\ & K_\theta(\mathbf{\tilde{x}},\mathbf{\tilde{x}}) -K_\theta(\mathbf{\tilde{x}},\mathbf{x}) (K_\theta(\mathbf{x},\mathbf{x}) + \delta ^ 2 \mathbf{I})^{-1}K_\theta(\mathbf{x},\mathbf{\tilde{x}}) + \delta ^ 2 \mathbf{I})
 \end{align*}
-
 \begin{figure} \label{prior-lat-draws}
   \makebox[\textwidth]{\includegraphics[width=\textwidth,height=50mm]{plots/latent_draws_comparison.pdf}}
   \caption{Parameters which lead to expected zero crossings of 1/2 on left and 3.16 crossings on right} \label{prior-lat-draws}
 \end{figure}
-
 However, if we want to infer $\theta$ from the data we will need to take our
 uncertainty in $\theta$ into account. We can see that both $\ell$ and $\alpha$
 will impact our predictions for $\tilde{\mathbf{y}}$. $\alpha^2$ controls the
@@ -251,19 +237,15 @@ GP prior with a small $\ell$.
 Naturally, $\ell$ and $\alpha$ also control observable statistics of the
 GP like the expected number of crossings of $f(x)$ on the interval $[0,
 T]$ at level $u$, $\Exp{C_u}$. \citet{cramer2004stationary} show that $\Exp{C_u}$:
-
 \begin{align*} 
   \Exp{C_u | \theta} = \dfrac{T}{\pi} 
 \sqrt{-\dfrac{k_\theta^{\prime \prime}(0)}{k_\theta(0)}}
   \text{exp}\left(-\dfrac{u^2}{2k_\theta(0)}\right)
 \end{align*} 
-
 For the $\Exp{C_u | \theta}$ exponentiated quadratic kernel:
-
 \begin{align*} 
   \Exp{C_u | \alpha, \ell} = \dfrac{T}{\pi \ell}\text{exp}\left(-\dfrac{u^2}{2 \alpha ^ 2} \right)
 \end{align*} 
-
 We can see that at $u = 0$, we are left with $\Exp{C_u | \alpha, \ell} = T / \pi \ell$.  
 
 However, at $u \neq 0$ $\alpha$ and $\ell$ are conflated in $\Exp{C_u | \alpha,
@@ -281,30 +263,28 @@ generate two identical datasets, how can we expect to extract information about
 that parameter from the data? Formally, we have a vector-valued random variable
 $Z \in \R^L$, with a family of densities, $p(z | \gamma)$, where $\gamma$ are
 unknown in $\R^S$. If $\gamma_1, \gamma_2 \in \R^S$ and 
-
 \begin{align*}
   p(z | \gamma_1) = p(z | \gamma_2) \forall z \in \R^L
 \end{align*}
-
-then we can say that $\gamma$ is unidentified. A example of unidentifiablity is
+then we can say that $\gamma$ is unidentified. A example of unidentifiability is
 a normal density for $z \in \R^1$ parameterized with two location parameters,
 $\beta$ and $\psi$. The likelihood is invariant to an additive shift $c$ to
 $\beta$ and a negative shift $c$ to $\psi$ (or vice-versa). Thus, the
 likelihood does not have a maximum with respect to $\beta$ and $\psi$. Note
 that this example is pathological, and can be alleviated by using a single
-location parameter.  Nevertheless, it is instructive as to the flavor of
+location parameter. Nevertheless, it is instructive as to the flavor of
 identifiability problems which can occur when the data do not constrain our
 estimate of the parameter. The classical definition of unidentifiable provided
 above must hold for all $z$. 
 
-For Bayesian inference, identifiability is more nuanced. If we are faced with a
-classically unidentified parameter like above, we can put proper priors on
-$\beta$ and $\psi$ and sample from the posterior, as shown in
-\cite{xie2004note}. In some sense, any set of priors will do because the
-parameters cannot be informed by any dataset. The posterior estimates
-are only possible through constraining the parameters using priors. 
+For Bayesian inference, identifiability is more nuanced. If we are faced with
+classically unidentified parameters like above, we can put proper priors on
+them and sample from the posterior, as shown in \cite{xie2004note}. In some
+sense, any set of priors will do because the parameters cannot be informed by
+any dataset. The posterior estimates are only possible through constraining the
+parameters using priors. 
 
-However, the Gaussian process parameterized with an isotropic kernel like
+The Gaussian process parameterized with an isotropic kernel like
 \ref{kern} lies on the spectrum between classically unidentified and
 classically identified. If the data do not adequately constrain the parameters
 $\alpha$ and $\ell$, we need to add additional structure to the posterior in
@@ -312,67 +292,54 @@ the form of priors that limit probability mass in the tail. If we do not
 we can get behavior that appears like classical unidentifiability in the 
 tail of the distribution: a flat log-posterior along $\ell$'s axis. 
 
-We use the term ``weak identifiability'' to refer to a pathology wherein a
-subset of its parameters exhibit behavior consistent with classical
-unidentifiability in certain regions of parameter space. This occurs when the
-data are not informative about this subset of parameters.  We avoid a formal
-definition because this is an open research question and not the focus of this
-paper.
+We use the term ``weak identifiability'' to refer to a pathology wherein
+parameters exhibit behavior consistent with classical unidentifiability in
+certain regions of parameter space. This occurs when the data are not
+informative about these parameters.  
 
 \subsection{Weak identifiability in GPs}
 
 \citet{rasmussen2005gaussian} show that a kernel $k(\boldsymbol{\tau})$ can
 represented in the frequency domain by its Fourier transform:
-
 \begin{align*}
   S(\mathbf{s}) = \int k(\mathbf{\tau}) \exp \left( -2 \pi i \mathbf{s}  \boldsymbol{\tau} \right) d\mathbf{s}
 \end{align*}
-
-The power spectrum for the exponentiate quadratic kernel can be derived analytically:
-
+The power spectrum for the exponentiated quadratic kernel can be derived analytically:
 \begin{align*} 
   S(s) \propto \alpha^2 \ell
    \exp \left(
   - 2 \pi^2 \ell^2 s^2
 \right)
 \end{align*} 
-
 This can be interpreted as the weight the kernel gives to an eigenfunction with
 frequency $s$. Thus, for large $\ell$ the kernel gives more weight to low
-frequency eigenfunctions and less weight to high-frequencye eigenfunctions. The 
-total power of the spectrum 
+frequency eigenfunctions and less weight to high-frequency eigenfunctions. 
 
 We see problems with the spectrum of the kernel because both the $\alpha ^ 2$
 term and the $\ell$ term scale the density $\exp \left(- 2 \pi^2 \ell^2 s^2
 \right)$ term. In settings with sparse data and a low frequency signal,
 increasing $\ell$ will force $S(s)$ to allocate more power to low frequency
 signals at the expense of high frequency. Increasing $\alpha$ will allocate
-more power to all frequencies, but because the data are low-frequency and
-sparse, we will not have enough resolution to distinguish between an increase
-in $\alpha$ or an increase in $\ell$. We can see that we will have the same
-problem with high frequency signals and sparse data. As $\ell$ decreases,
-we allocate more power to high-frequency functions at the expense of 
-low-frequency functions. We can decrease $\alpha$ in order to decrease
-the power allocated to all frequencies, but the sparsity of the data
-necessarily means we will not be able to learn the fine-resolution
-structure of the spectral density.
+more power to all frequencies, but because the data are sparse, we will not
+have enough resolution to distinguish between an increase in $\alpha$ or an
+increase in $\ell$. We can see that we will have the same problem with high
+frequency signals and sparse data. As $\ell$ decreases, we allocate more power
+to high-frequency functions at the expense of low-frequency functions. We can
+decrease $\alpha$ in order to decrease the power allocated to all frequencies,
+but the sparsity of the data necessarily means we will not be able to learn the
+fine-resolution structure of the spectral density.
 
 Note that the intuition provided above does not fit the definition of 
 classical unidentifiability; the spectral density certainly does change
 values for two distinct sets of hyperparameters. However, sparse data
-may not provide enough constraint to infer the hyperparameters effectively.
+may not provide enough information to effectively constrain the hyperparameters.
 
-Our intuition says that the multiplicative term might lead to positive
-posterior correlation between $\alpha$ and $\ell$. However, it is not clear
-whether using strong independent prior information will mitigate this posterior
-correlation, nor is it clear how weak priors over $\ell$ will manifest
-themselves in posteriors over $\alpha$. 
-
-Turning to equation \ref{kern} again, we can see that the limiting behavior of
-the GP as $\ell \rightarrow \infty$ and $\alpha \rightarrow 0$ each lead to the
-constant function. We can also see that $\ell \rightarrow 0$ will conflate
-inferences in $\delta$.  Note that as $\ell \rightarrow 0$ $\Exp{C_u | \alpha,
-\ell}$ diverges.
+There are also weak identification problems at the limits of the
+hyperparameters' support. Turning to equation \ref{kern}, we can see that
+the limiting behavior of the GP as $\ell \rightarrow \infty$ and $\alpha
+\rightarrow 0$ each lead to the constant function. We can also see that $\ell
+\rightarrow 0$ will conflate inferences in $\delta$.  Note that as $\ell
+\rightarrow 0$ $\Exp{C_u | \alpha, \ell}$ diverges.
 
 \section{Experiment} \label{experiment}
 
@@ -383,7 +350,7 @@ subsequently inferring $\alpha$, $\ell$, and $\delta$ by using Stan.
 \subsection{Priors}
 
 Limiting behavior of GPs is an important driver of weak identifiability, so we
-decided to choose priors that differed in probability mass near zero and mass
+chose priors that differed in probability mass near zero and mass
 in the tails of the densities, but that were similar in mass at other regions
 of support. Thus, we calibrate our choices of priors for $\ell$ by fixing the
 amount of probability mass between 0 and 1 for each prior at $\sim60\%$ but by
@@ -391,12 +358,10 @@ varying the priors' mass near zero and by varying the priors' tail heaviness.
 
 This yields 4 priors: $\text{Gamma}(2, 2)$, $\text{Half-Cauchy}(0, 0.7)$,
 $\text{Half-Normal}(0, 1.2)$, $\text{Weibull}(2, 1)$
-
 \begin{figure}[t] 
-  \makebox[\textwidth]{\includegraphics[width=\textwidth,height=50mm]{plots/prior_0_4_chart.pdf}}
+  \makebox[\textwidth]{\includegraphics[width=\textwidth,height=70mm]{plots/prior_0_4_chart.pdf}}
   \caption{Priors over $\ell$ (length-scale)} \label{prior_plot}
 \end{figure}
-
 The $\text{Half-Cauchy}(0, 0.7)$ has the most mass at zero, and the most tail
 mass. $\text{Gamma}(2, 2)$ has a heavy tail, but much lighter mass near zero
 (in fact, it has zero mass exactly at zero, and thus is a zero-avoiding prior
@@ -406,10 +371,42 @@ $\text{Gamma}(2, 2)$, but still has quite a bit of mass near zero.
 $\text{Weibull}(2, 1)$ has about as much mass near zero as $\text{Gamma}(2, 2)$
 but its tails are lighter than $\text{Half-Normal}(0, 1.2)$.
 
+Another way to think about priors on length-scale is to consider the effective
+number of parameters of a Gaussian process. The effective number of parameters
+are the number of degrees of freedom for $f(x_i)$, the conditional mean of $y_i$:
+$y_i \sim \mathcal{N}(f(x_i), \delta)$.
+For example, a linear regression with one predictor and a mean has an effective
+number of parameters of 2. If we exclude the predictor, we have 1 effective
+parameter.
+\begin{figure}[t] 
+  \makebox[\textwidth]{\includegraphics[width=\textwidth,height=70mm]{plots/effective_number_parameter_zoomed.pdf}}
+  \caption{Priors over the effective number of parameters of a linear smoother} \label{eff_pars_plot}
+\end{figure}
+\citet{rasmussen2005gaussian} show that for a GP the effective number of
+parameters is:
+\begin{align*}
+  \text{tr}(K_\theta (K_\theta + \delta^2 I_n)^{-1})
+\end{align*}
+where $I_n$ is the $n$-dimensional identity matrix and tr is the sum of the
+diagonal of a matrix. One should note that if we have a noiseless GP, our
+effective number of parameters is $n$, which makes sense because if we do not
+have noise in our process, our predicted mean at each data point $y_i$ is just
+$y_i$. Thus, we would need $n$ parameters to model $n$ data points. In figure
+\ref{eff_pars_plot}, we show 500 draws from the implied distribution for
+effective number of parameters for all four of the priors. For each
+distribution, we have fixed both $\alpha$ and $\delta$ at $0.71$. 
+
+We can see that the Half-Cauchy distribution puts far more mass than the other
+priors on small numbers of effective parameters. The Weibull generates a
+more concentrated distribution than the other priors. We think that putting
+priors in terms of effective number of parameters is a useful way to think
+about priors on length-scale because the value can be anchored by effective
+numbers of parameters in common classes of models.
+
 We fix our priors for $\alpha$ and $\delta$ as $\text{Half-Normal}(0, 1)$. We
-decided not to vary the parameters of $\alpha$ or $\delta$ because we believe
-that by applying well-constructed priors to $\ell$ we can mitigate problems
-in estimating $\alpha$. 
+do not to vary the priors of $\alpha$ or $\delta$ because we believe that by
+applying well-constructed priors to $\ell$ we can mitigate problems in
+estimating $\alpha$. 
 
 \subsection{Datasets}
 
@@ -422,9 +419,9 @@ which had a signal-to-noise ratio $\alpha ^ 2/ \delta ^ 2$ (SN) of $1$ and one
 set which had a signal-to-noise ratio of $10$. The marginal variance $\alpha ^
 2 + \delta ^ 2$ was fixed at 1 for each parameter set. The full data set
 parameters are below:
-
 \begin{table}[ht]
 \centering
+\caption{Data set parameters}
 \begin{tabular}{rrrrrr}
   \hline
   & $\alpha$ & $\delta$ & SN & $\ell$ & $\Exp{C_0}$ \\ 
@@ -444,7 +441,6 @@ parameters are below:
    \hline
 \end{tabular}
 \end{table}
-
 \subsection{Inference}
 
 We ran Stan on the command line (\citet{cmdstan}) for 1000 warmup and 1000
@@ -456,9 +452,9 @@ size, as suggested by \citet{gelman2014bayesian}.
 
 We confirm our intuition that in settings with sparse data the tails of the
 posterior distribution under heavy-tailed priors like the Cauchy are fat and
-can lead to biased inferences. An illuminating example that arose from the
-setting in which the signal-to-noise ratio was 1 and $\ell$ was set to 2.54 is
-worth highlighting.
+can lead to biased inferences. An instructive example arose from the setting in
+which the signal-to-noise ratio was 1 and $\ell$ was set to 2.54 is worth
+highlighting.
 
 The data and the latent mean functions are nearly constant across the $[-2,2]$
 interval, as shown in figure $\ref{gp_set_3}$. Our inferences for $\ell$ and $\alpha$
@@ -470,26 +466,22 @@ posterior predictive mean distribution from the $\text{Half-Normal}(0, 1.2)$
 prior over $\ell$ is better, though we can see the model still having trouble
 distinguishing the true latent mean function. This is to be expected in settings
 where the signal-to-noise ratio is low and the data are not informative.
-
-\begin{figure}[h]
+\begin{figure}[htbp]
   \centering
   \makebox[\textwidth]{\includegraphics[width=\textwidth]{plots/dset_3_dgp.pdf}}
   \caption{Synthetic dataset with nearly constant latent function and high noise} \label{gp_set_3}
 \end{figure}
-
-\begin{figure}[h]
+\begin{figure}[htbp]
   \centering
   \makebox[\textwidth]{\includegraphics[width=\textwidth]{plots/dset_3_length_alpha.pdf}}
   \caption{Posterior distributions for $\ell$ and $\alpha$ under
   $\text{Half-Cauchy}(0, 0.7)$ and $\text{Half-Normal}(0, 1.2)$ priors for $\ell$} \label{gp_set_3_len}
 \end{figure}
-
-\begin{figure}[t]
+\begin{figure}[htbp]
   \centering
   \makebox[\textwidth]{\includegraphics[width=\textwidth, height=75mm]{plots/half_cauchy_dset_3_post_pred_mean.pdf}}
   \caption{4000 draws from the distribution of the posterior predictive means for new data over the $[-2,2]$ domain} \label{gp_set_3_post_pred_cauchy}
 \end{figure}
-
 Given that the $\text{Half-Cauchy}(0, 0.7)$ has a heavy tail, and given that
 constant GPs and GPs that are near-constant can be very hard to distinguish
 using any one data set, we recommend against using the Cauchy when there are
@@ -499,13 +491,11 @@ another using finite data sets.
 
 This can be seen in the distribution of posterior means for $\ell$ and $\alpha$
 across simulations in the low signal-to-noise, large $\ell$ scenario in figure \ref{joint_len_alpha}. 
-
-\begin{figure}[h]
+\begin{figure}[htbp]
   \centering
   \makebox[\textwidth]{\includegraphics[width=\textwidth]{plots/dsets_2_5_alpha_0_7_alpha_length.pdf}}
   \caption{Posterior means of $\alpha$ and $\ell$. Data generated from GP with $\ell = 2.54, \alpha = 0.71, \delta = 0.71$.} \label{joint_len_alpha}
 \end{figure}
-
 We can see the fat tails of the Half-Cauchy leading to positively biased
 estimates of length-scale in figure \ref{joint_len_alpha}. Given the paucity of
 information in the data about the underlying mean function, our priors affect
@@ -524,32 +514,237 @@ zero and a length-scale greater than zero. However, this is likely a function
 of the data being dense in $x$. We do see strong positive correlation between
 $\ell$ and $\alpha$ in figure \ref{joint_len_alpha_high_SN}, which is a
 byproduct of weak identifiability in the GP prior.
-
-\begin{figure}[h]
+\begin{figure}[htbp]
   \centering
   \makebox[\textwidth]{\includegraphics[width=\textwidth]{plots/dsets_0_05_alpha_0_7_alpha_length.pdf}}
   \caption{Posterior means of $\alpha$ and $\ell$. Data generated from GP with $\ell = 0.04, \alpha = 0.71, \delta = 0.71$.} \label{joint_len_alpha_high_SN}
 \end{figure}
 
 We present tables for summary statistics from the experiments across the 100
-replicated datsets. We computed the 50\% and 90\% interval coverage, the bias,
-the root mean squared error, and the mean interval width for $\alpha$ and
-$\ell$. The most important takeaway is that if the tails of our priors are not
-constructed with thought about the problem at hand, we can have low coverage,
-or high bias, no matter the prior we use. We recommend a normal distribution
-with care given to the scale of the process.
+replicated datasets in the Appendix. We computed the 50\% and 90\% interval
+coverage, the bias, the mean interval width for $\alpha$ and $\ell$. The most
+important takeaway is that if the tails of our priors are not constructed with
+thought about the problem at hand, we can have low coverage, or high bias, no
+matter the prior we use. 
 
-Another way to think about how to set priors on length-scale is to consider
-the effective parameters 
+\section{Conclusion}
 
-These experiments suggest that setting a soft upper bound on $\ell$ with a
-prior with a fast-decaying tail is a good weakly informative prior. More work
-needs to be done to understand joint priors over $\alpha$, $\delta$, and
-$\ell$.
+We recommend against using a Cauchy density for a prior on the length-scale
+hyperparameter $\ell$. In order to set an appropriate prior on length-scale,
+the analyst should think about the expected number of effective parameters.
+For example, compared to the other priors the Cauchy puts more mass on small
+effective numbers of parameters. This may be why the GP with the
+$\text{Half-Cauchy}(0, 0.7)$ had trouble distinguishing a signal in sparse
+data. The Half-Cauchy prior also puts more mass than the other priors on large
+effective numbers of parameters. The prior acts as a polarizing regularizer,
+and will represent two potentially contradictory beliefs if the analyst is not
+careful.
+
+These experiments also suggest that setting a soft upper bound on $\ell$ by
+using a prior on $\ell$ with a fast-decaying tail is a good weakly informative
+prior.  More work needs to be done to understand joint priors over $\alpha$,
+$\delta$, and $\ell$. Additionally, more work needs to be done on
+reparameterizing the exponentiated quadratic kernel. Perhaps parameterizing the
+kernel in terms of the effective number of parameters would more intuitive and
+would not yield weak identifiability.
 
 \pagebreak
 
 \section{Appendix}
+
+\subsection{Results details}
+
+\subsubsection{Between simulation summaries: $\alpha$}
+
+% latex table generated in R 3.3.0 by xtable 1.8-2 package
+% Sun Dec  4 23:55:01 2016
+\begin{table}[htbp]
+\centering
+\caption {Bias of posterior mean for $\alpha$} \label{bias_alpha} 
+\begin{tabular}{rrrrrrrr}
+  \hline
+ & SN & $\ell$ & $\alpha$ & Cauchy & Normal & Weibull & Gamma \\ 
+  \hline
+1 & 1.00 & 0.04 & 0.71 & 0.02 & 0.03 & 0.03 & 0.03 \\ 
+  2 & 1.00 & 0.13 & 0.71 & 0.06 & 0.06 & 0.07 & 0.06 \\ 
+  3 & 1.00 & 0.40 & 0.71 & 0.09 & 0.10 & 0.12 & 0.11 \\ 
+  4 & 1.00 & 0.64 & 0.71 & 0.13 & 0.15 & 0.15 & 0.15 \\ 
+  5 & 1.00 & 1.27 & 0.71 & 0.08 & 0.07 & 0.02 & 0.06 \\ 
+  6 & 1.00 & 2.54 & 0.71 & 0.06 & -0.05 & -0.09 & -0.05 \\ 
+  7 & 10.00 & 0.04 & 0.95 & 0.00 & 0.00 & 0.00 & 0.00 \\ 
+  8 & 10.00 & 0.13 & 0.95 & 0.01 & 0.01 & 0.02 & 0.02 \\ 
+  9 & 10.00 & 0.40 & 0.95 & 0.07 & 0.07 & 0.09 & 0.08 \\ 
+  10 & 10.00 & 0.64 & 0.95 & 0.10 & 0.11 & 0.12 & 0.11 \\ 
+  11 & 10.00 & 1.27 & 0.95 & 0.02 & 0.02 & -0.02 & 0.01 \\ 
+  12 & 10.00 & 2.54 & 0.95 & -0.00 & -0.11 & -0.19 & -0.10 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption {50\% interval coverage for $\alpha$} \label{50_cover_alpha} 
+\begin{tabular}{rrrrrrrr}
+  \hline
+ & SN & $\ell$ & $\alpha$ & Cauchy & Normal & Weibull & Gamma \\ 
+  \hline
+1 & 1.00 & 0.04 & 0.71 & 0.50 & 0.50 & 0.49 & 0.48 \\ 
+  2 & 1.00 & 0.13 & 0.71 & 0.48 & 0.47 & 0.50 & 0.51 \\ 
+  3 & 1.00 & 0.40 & 0.71 & 0.48 & 0.47 & 0.51 & 0.50 \\ 
+  4 & 1.00 & 0.64 & 0.71 & 0.59 & 0.56 & 0.56 & 0.58 \\ 
+  5 & 1.00 & 1.27 & 0.71 & 0.56 & 0.51 & 0.50 & 0.53 \\ 
+  6 & 1.00 & 2.54 & 0.71 & 0.64 & 0.42 & 0.35 & 0.41 \\ 
+  7 & 10.00 & 0.04 & 0.95 & 0.38 & 0.39 & 0.38 & 0.38 \\ 
+  8 & 10.00 & 0.13 & 0.95 & 0.45 & 0.45 & 0.45 & 0.46 \\ 
+  9 & 10.00 & 0.40 & 0.95 & 0.52 & 0.50 & 0.51 & 0.51 \\ 
+  10 & 10.00 & 0.64 & 0.95 & 0.53 & 0.52 & 0.54 & 0.54 \\ 
+  11 & 10.00 & 1.27 & 0.95 & 0.49 & 0.46 & 0.43 & 0.44 \\ 
+  12 & 10.00 & 2.54 & 0.95 & 0.55 & 0.43 & 0.30 & 0.46 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption {90\% interval coverage for $\alpha$} \label{90_cover_alpha} 
+\begin{tabular}{rrrrrrrr}
+  \hline
+ & SN & $\ell$ & $\alpha$ & Cauchy & Normal & Weibull & Gamma \\ 
+  \hline
+1 & 1.00 & 0.04 & 0.71 & 0.83 & 0.82 & 0.83 & 0.83 \\ 
+  2 & 1.00 & 0.13 & 0.71 & 0.85 & 0.85 & 0.85 & 0.83 \\ 
+  3 & 1.00 & 0.40 & 0.71 & 0.90 & 0.90 & 0.90 & 0.89 \\ 
+  4 & 1.00 & 0.64 & 0.71 & 0.88 & 0.85 & 0.87 & 0.86 \\ 
+  5 & 1.00 & 1.27 & 0.71 & 0.93 & 0.92 & 0.89 & 0.95 \\ 
+  6 & 1.00 & 2.54 & 0.71 & 0.93 & 0.92 & 0.87 & 0.91 \\ 
+  7 & 10.00 & 0.04 & 0.95 & 0.85 & 0.86 & 0.85 & 0.87 \\ 
+  8 & 10.00 & 0.13 & 0.95 & 0.84 & 0.84 & 0.86 & 0.86 \\ 
+  9 & 10.00 & 0.40 & 0.95 & 0.88 & 0.88 & 0.90 & 0.88 \\ 
+  10 & 10.00 & 0.64 & 0.95 & 0.89 & 0.90 & 0.91 & 0.91 \\ 
+  11 & 10.00 & 1.27 & 0.95 & 0.97 & 0.97 & 0.93 & 0.95 \\ 
+  12 & 10.00 & 2.54 & 0.95 & 0.98 & 0.91 & 0.82 & 0.90 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption {90\% interval width for $\alpha$} \label{90_wid_alpha} 
+\begin{tabular}{rrrrrrrr}
+  \hline
+ & SN & $\ell$ & $\alpha$ & Cauchy & Normal & Weibull & Gamma \\ 
+  \hline
+1 & 1.00 & 0.04 & 0.71 & 0.25 & 0.25 & 0.25 & 0.25 \\ 
+  2 & 1.00 & 0.13 & 0.71 & 0.43 & 0.43 & 0.44 & 0.44 \\ 
+  3 & 1.00 & 0.40 & 0.71 & 0.74 & 0.76 & 0.78 & 0.76 \\ 
+  4 & 1.00 & 0.64 & 0.71 & 0.90 & 0.93 & 0.91 & 0.92 \\ 
+  5 & 1.00 & 1.27 & 0.71 & 1.03 & 0.97 & 0.86 & 0.95 \\ 
+  6 & 1.00 & 2.54 & 0.71 & 1.12 & 0.86 & 0.76 & 0.87 \\ 
+  7 & 10.00 & 0.04 & 0.95 & 0.28 & 0.28 & 0.28 & 0.28 \\ 
+  8 & 10.00 & 0.13 & 0.95 & 0.48 & 0.48 & 0.49 & 0.49 \\ 
+  9 & 10.00 & 0.40 & 0.95 & 0.81 & 0.82 & 0.84 & 0.83 \\ 
+  10 & 10.00 & 0.64 & 0.95 & 0.96 & 0.98 & 0.98 & 0.97 \\ 
+  11 & 10.00 & 1.27 & 0.95 & 1.08 & 1.06 & 0.98 & 1.05 \\ 
+  12 & 10.00 & 2.54 & 0.95 & 1.19 & 0.97 & 0.84 & 0.99 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Between simulation summaries: $\ell$}
+
+\begin{table}[htbp]
+\centering
+\caption {Bias of posterior mean for $\ell$} \label{bias_ell} 
+\begin{tabular}{rrrrrrr}
+	 & SN & $\ell$ & Cauchy & Normal & Weibull & Gamma \\ 
+  \hline
+	1 & 1.00 & 0.04 & 0.00 & 0.00 & 0.00 & 0.00 \\ 
+  2 & 1.00 & 0.13 & 0.01 & 0.01 & 0.01 & 0.01 \\ 
+  3 & 1.00 & 0.40 & 0.03 & 0.03 & 0.05 & 0.04 \\ 
+  4 & 1.00 & 0.64 & 0.13 & 0.14 & 0.14 & 0.14 \\ 
+  5 & 1.00 & 1.27 & 1.15 & 0.10 & -0.07 & 0.07 \\ 
+  6 & 1.00 & 2.54 & 2.95 & -0.66 & -1.09 & -0.64 \\ 
+  7 & 10.00 & 0.04 & 0.00 & 0.00 & 0.00 & 0.00 \\ 
+  8 & 10.00 & 0.13 & 0.00 & 0.00 & 0.00 & 0.00 \\ 
+  9 & 10.00 & 0.40 & 0.01 & 0.01 & 0.02 & 0.01 \\ 
+  10 & 10.00 & 0.64 & 0.02 & 0.03 & 0.04 & 0.03 \\ 
+  11 & 10.00 & 1.27 & 0.09 & 0.06 & -0.02 & 0.04 \\ 
+  12 & 10.00 & 2.54 & 0.50 & -0.46 & -0.87 & -0.42 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+
+\begin{table}[htbp]
+\centering
+\caption {50\% interval coverage for $\ell$} \label{50_cover_ell} 
+\begin{tabular}{rrrrrrrr}
+  \hline
+ & SN & $\ell$ & $\alpha$ & Cauchy & Normal & Weibull & Gamma \\ 
+  \hline
+1 & 1.00 & 0.04 & 0.71 & 0.59 & 0.59 & 0.51 & 0.52 \\ 
+  2 & 1.00 & 0.13 & 0.71 & 0.52 & 0.51 & 0.50 & 0.50 \\ 
+  3 & 1.00 & 0.40 & 0.71 & 0.53 & 0.53 & 0.47 & 0.53 \\ 
+  4 & 1.00 & 0.64 & 0.71 & 0.48 & 0.45 & 0.48 & 0.46 \\ 
+  5 & 1.00 & 1.27 & 0.71 & 0.52 & 0.60 & 0.59 & 0.61 \\ 
+  6 & 1.00 & 2.54 & 0.71 & 0.59 & 0.08 & 0.00 & 0.18 \\ 
+  7 & 10.00 & 0.04 & 0.95 & 0.48 & 0.49 & 0.46 & 0.47 \\ 
+  8 & 10.00 & 0.13 & 0.95 & 0.43 & 0.42 & 0.45 & 0.42 \\ 
+  9 & 10.00 & 0.40 & 0.95 & 0.49 & 0.47 & 0.44 & 0.48 \\ 
+  10 & 10.00 & 0.64 & 0.95 & 0.60 & 0.59 & 0.59 & 0.60 \\ 
+  11 & 10.00 & 1.27 & 0.95 & 0.53 & 0.57 & 0.55 & 0.53 \\ 
+  12 & 10.00 & 2.54 & 0.95 & 0.53 & 0.29 & 0.00 & 0.33 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption {90\% interval coverage for $\ell$} \label{90_cover_ell} 
+\begin{tabular}{rrrrrrrr}
+  \hline
+ & SN & $\ell$ & $\alpha$ & Cauchy & Normal & Weibull & Gamma \\ 
+  \hline
+1 & 1.00 & 0.04 & 0.71 & 0.90 & 0.90 & 0.88 & 0.89 \\ 
+  2 & 1.00 & 0.13 & 0.71 & 0.88 & 0.88 & 0.86 & 0.88 \\ 
+  3 & 1.00 & 0.40 & 0.71 & 0.95 & 0.95 & 0.91 & 0.94 \\ 
+  4 & 1.00 & 0.64 & 0.71 & 0.88 & 0.87 & 0.86 & 0.86 \\ 
+  5 & 1.00 & 1.27 & 0.71 & 0.96 & 0.98 & 0.98 & 0.98 \\ 
+  6 & 1.00 & 2.54 & 0.71 & 0.98 & 0.82 & 0.02 & 0.84 \\ 
+  7 & 10.00 & 0.04 & 0.95 & 0.87 & 0.87 & 0.82 & 0.86 \\ 
+  8 & 10.00 & 0.13 & 0.95 & 0.87 & 0.87 & 0.88 & 0.88 \\ 
+  9 & 10.00 & 0.40 & 0.95 & 0.88 & 0.88 & 0.89 & 0.89 \\ 
+  10 & 10.00 & 0.64 & 0.95 & 0.94 & 0.94 & 0.93 & 0.93 \\ 
+  11 & 10.00 & 1.27 & 0.95 & 0.94 & 0.94 & 0.96 & 0.94 \\ 
+  12 & 10.00 & 2.54 & 0.95 & 0.92 & 0.85 & 0.16 & 0.86 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption {90\% interval width for $\ell$} \label{90_wid_ell} 
+\begin{tabular}{rrrrrrrr}
+  \hline
+ & SN & $\ell$ & $\alpha$ & Cauchy & Normal & Weibull & Gamma \\ 
+  \hline
+1 & 1.00 & 0.04 & 0.71 & 0.02 & 0.02 & 0.02 & 0.02 \\ 
+  2 & 1.00 & 0.13 & 0.71 & 0.06 & 0.06 & 0.07 & 0.06 \\ 
+  3 & 1.00 & 0.40 & 0.71 & 0.28 & 0.29 & 0.29 & 0.28 \\ 
+  4 & 1.00 & 0.64 & 0.71 & 0.68 & 0.63 & 0.58 & 0.62 \\ 
+  5 & 1.00 & 1.27 & 0.71 & 3.94 & 1.34 & 1.02 & 1.37 \\ 
+  6 & 1.00 & 2.54 & 0.71 & 11.13 & 1.97 & 1.31 & 2.18 \\ 
+  7 & 10.00 & 0.04 & 0.95 & 0.01 & 0.01 & 0.01 & 0.01 \\ 
+  8 & 10.00 & 0.13 & 0.95 & 0.03 & 0.03 & 0.03 & 0.03 \\ 
+  9 & 10.00 & 0.40 & 0.95 & 0.16 & 0.16 & 0.16 & 0.16 \\ 
+  10 & 10.00 & 0.64 & 0.95 & 0.29 & 0.30 & 0.29 & 0.29 \\ 
+  11 & 10.00 & 1.27 & 0.95 & 0.96 & 0.85 & 0.74 & 0.85 \\ 
+  12 & 10.00 & 2.54 & 0.95 & 4.14 & 1.70 & 1.19 & 1.88 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+\pagebreak
 
 \subsection{Stan code}
 
