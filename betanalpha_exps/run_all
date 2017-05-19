@@ -1,0 +1,7 @@
+#!/bin/bash
+
+./run_analysis gp1
+#./run_analysis gp2
+#./run_analysis gp3
+#./run_analysis gp4
+./run_analysis gp5

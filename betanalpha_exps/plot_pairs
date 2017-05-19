@@ -1,0 +1,79 @@
+#!/bin/bash
+
+light="#DCBCBC"
+light_highlight="#C79999"
+mid="#B97C7C"
+mid_highlight="#A25050"
+dark="#8F2727"
+dark_highlight="#7C0000"
+
+prefix=$1
+file=output/${prefix}.output.csv
+
+names=("rho" "alpha" "sigma")
+display_names=('{/Symbol r}' '{/Symbol a}' '{/Symbol s}')
+indices=""
+for name in ${names[@]}
+do
+  index=`awk 'NR==38 {print $0}' $file | tr ',' '\n' | awk '{print NR, $0}' | \
+       grep " $name$" | awk '{print $1}'`
+  if [ "$index" == "" ]; then
+    echo "Variable $name does not exist in $file"
+    exit
+  fi
+  indices=(${indices[@]} $index)
+done
+
+N="${#names[@]}"
+
+i=0
+while [ $i -lt $N ]
+do
+  name1=${names[$i]}
+  display_name1=${display_names[$i]}
+  index1=${indices[$i]}
+
+  upper="*"
+  if [ "$name1" == "rho" ]; then
+    [ "$prefix" == "gp4" ] && upper="80"
+    [ "$prefix" == "gp5" ] && upper="40"
+  fi
+
+  let j=i+1
+  while [ $j -lt $N ]
+  do
+    name2=${names[$j]}
+    display_name2=${display_names[$j]}
+    index2=${indices[$j]}
+
+gnuplot << END
+
+set datafile separator ','
+
+set terminal pngcairo transparent enhanced size 1200, 800 font 'Times, 30'
+set output 'images/${prefix}_${name1}_${name2}.png'
+
+set border 3
+
+set title ""
+
+set xtics nomirror scale 0
+set xlabel "$display_name1"
+set xrange[*:$upper]
+
+set ytics nomirror scale 0
+set ylabel "$display_name2"
+
+set style fill transparent solid 0.025 noborder
+set style circle radius screen 0.0025
+
+plot \
+"$file" using $index1:$index2 w circles lc rgb "$dark" notitle, \
+"$file"  using (\$6 == 1 ? \$$index1 : 1/0):$index2 w circles fs solid 1 lc rgb "green" notitle
+
+END
+    let ++j
+  done
+
+  let ++i
+done

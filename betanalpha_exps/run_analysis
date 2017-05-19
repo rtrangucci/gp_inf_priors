@@ -1,0 +1,28 @@
+#!/bin/bash
+
+prefix=$1
+
+baseDir="/Users/Betancourt/Documents/Research/Code/stan-dev/cmdstan"
+localDir="misc_models/gp_lengthscale_prior"
+
+cd $baseDir
+make CC=clang++ -j4 O=3 $localDir/$prefix
+
+cd $localDir
+
+./${prefix} sample num_samples=100000 random seed=4883992 \
+  data file=gp.data.R output file=output/${prefix}.output.csv
+
+awk -F, 'NR >= 43 && NR < 100043 {if((NR - 43) % 200 == 1) print $0}' \
+  output/${prefix}.output.csv > output/${prefix}.clean_output.csv
+
+awk -F, 'NR >= 43 && NR < 100043 {if($6 == 1) print $0}' \
+  output/${prefix}.output.csv > output/${prefix}.div_output.csv
+
+awk -F, 'NR >= 43 && NR < 100043 {if($10 < 0.5) print $0}' \
+  output/${prefix}.output.csv > output/${prefix}.low_sigma_output.csv
+
+echo "Plotting pairs"
+./plot_pairs ${prefix}
+echo "Plotting realizations"
+./plot_gp_realizations ${prefix}

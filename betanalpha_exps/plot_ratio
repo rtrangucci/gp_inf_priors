@@ -1,0 +1,39 @@
+#!/bin/bash
+
+light="#DCBCBC"
+light_highlight="#C79999"
+mid="#B97C7C"
+mid_highlight="#A25050"
+dark="#8F2727"
+dark_highlight="#7C0000"
+
+prefix=$1
+file=output/${prefix}.output.csv
+
+gnuplot << END
+
+set datafile separator ','
+
+set terminal pngcairo transparent enhanced size 1200, 800 font 'Times, 30'
+set output 'images/${prefix}_rho_snr.png'
+
+set border 3
+
+set title ""
+
+set xtics nomirror scale 0
+set xlabel "{/Symbol r}"
+set xrange[*:20]
+
+set ytics nomirror scale 0
+set ylabel "{/Symbol s} / {/Symbol a}"
+set yrange[0:3]
+
+set style fill transparent solid 0.025 noborder
+set style circle radius screen 0.0025
+
+plot \
+"$file" using 8:(\$10/\$9) w circles lc rgb "$dark" notitle, \
+"$file"  using (\$6 == 1 ? \$8 : 1/0):(\$10/\$9) w circles fs solid 1 lc rgb "green" notitle
+
+END

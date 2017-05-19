@@ -1,0 +1,89 @@
+#!/bin/bash
+
+light="#DCBCBC"
+light_highlight="#C79999"
+mid="#B97C7C"
+mid_highlight="#A25050"
+dark="#8F2727"
+dark_highlight="#7C0000"
+
+prefix=$1
+clean_file="output/${prefix}.clean_output.csv"
+div_file="output/${prefix}.div_output.csv"
+low_sigma_file="output/${prefix}.low_sigma_output.csv"
+
+sample_start=1
+sample_end=`cat $div_file | wc -l`
+
+gnuplot << END
+
+set terminal pngcairo transparent enhanced size 1200, 800 font 'Times, 30'
+set output 'images/${prefix}.div_realizations.png'
+
+set border 3
+
+set title "Divergent Realizations"
+
+set xtics nomirror scale 0
+set xlabel 'x'
+set xrange[-10:10]
+
+set ytics nomirror scale 0
+set ylabel 'y'
+set yrange[-1:7]
+
+set zlabel ''
+set cbrange[-0.5 * $sample_end:$sample_end]
+unset cbtics
+unset colorbox
+
+set palette model RGB rgbformulae 8, 9, 9 negative
+
+plot \
+for [i=1:500] \
+"< sed -n ".i."p $clean_file | awk -F, '{for(n=22; n < 33; ++n) print \$n}'" \
+u (2.0 * \$0 - 10):1 w l lt 1 lw 3 lc rgb "grey" notitle, \
+for [i=$sample_start:$sample_end] \
+"< sed -n ".i."p $div_file | awk -F, '{for(n=22; n < 33; ++n) print \$n}'" \
+u (2.0 * \$0 - 10):1:(i-$sample_start) w l lt 1 lw 3 lc palette notitle, \
+'truth.dat' u (2.0 * \$0 - 10):1 w p pt 7 ps 1.5 lc rgb "white" notitle, \
+'truth.dat' u (2.0 * \$0 - 10):1 w p pt 7 ps 1.25 lc rgb "black" notitle
+END
+
+sample_start=1
+sample_end=`cat $low_sigma_file | wc -l`
+
+gnuplot << END
+
+set terminal pngcairo transparent enhanced size 1200, 800 font 'Times, 30'
+set output 'images/${prefix}.low_sigma_realizations.png'
+
+set border 3
+
+set title "Low {/Symbol s} Realizations"
+
+set xtics nomirror scale 0
+set xlabel 'x'
+set xrange[-10:10]
+
+set ytics nomirror scale 0
+set ylabel 'y'
+set yrange[-1:7]
+
+set zlabel ''
+set cbrange[-0.5 * $sample_end:$sample_end]
+unset cbtics
+unset colorbox
+
+set palette model RGB rgbformulae 8, 9, 9 negative
+
+plot \
+for [i=1:500] \
+"< sed -n ".i."p $clean_file | awk -F, '{for(n=22; n < 33; ++n) print \$n}'" \
+u (2.0 * \$0 - 10):1 w l lt 1 lw 3 lc rgb "grey" notitle, \
+for [i=$sample_start:$sample_end] \
+"< sed -n ".i."p $low_sigma_file | awk -F, '{for(n=22; n < 33; ++n) print \$n}'" \
+u (2.0 * \$0 - 10):1:(i-$sample_start) w l lt 1 lw 3 lc palette notitle, \
+'truth.dat' u (2.0 * \$0 - 10):1 w p pt 7 ps 1.5 lc rgb "white" notitle, \
+'truth.dat' u (2.0 * \$0 - 10):1 w p pt 7 ps 1.25 lc rgb "black" notitle
+END
