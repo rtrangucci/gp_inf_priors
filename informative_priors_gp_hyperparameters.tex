@@ -141,14 +141,17 @@ estimation (\citet{stein2012interpolation}, \citet{rasmussen2005gaussian},
 \citet{warnes1987problems}), and the asymptotic properties of posterior
 conditional mean functions in GP regressions (\citet{seeger2008information},
 \citet{stein2012interpolation}, \citet{rasmussen2005gaussian},
-\citet{williams2000upper}). As applied statisticians, we face datasets with
-finitely many observations. As such there will be many sets of hyperparameters
-that are consistent with our data; picking any one set of them will lead to
-overfitting and poor out-of-sample predictions. Instead, we advocate placing
-priors over hyperparameters and integrate over our uncertainty when making
-predictions for new data. In order to do this we need to engineer principled
-priors that regularize the Gaussian process sufficiently to admit practical
-fitting without compromising its statistical utility
+\citet{williams2000upper}) with some exceptions such as
+\citet{neal1998regression} and \citet{vanhatalo2013gpstuff}. As applied
+statisticians, we face datasets with finitely many observations. As such there
+will be many sets of hyperparameters that are consistent with our data; picking
+any one set of them will lead to overfitting and poor out-of-sample
+predictions. Instead, we advocate placing priors over hyperparameters and
+integrate over our uncertainty when making predictions for new data. The
+empirical advantage of full Bayesian inference versus point estimation are
+well-documented (\citet{vehtariloo}).  In order to do this we need to engineer
+principled priors that regularize the Gaussian process sufficiently to admit
+practical fitting without compromising its statistical utility
 
 In order to gain insight into the empirical behavior of different priors, we
 explore how efficiently 4 weakly informative priors can extract known
@@ -186,7 +189,7 @@ element of $K_\theta(x, x)$:
 \begin{align*}
   \text{cov}(f(x_i), f(x_j)) = k(x_i, x_j | \theta) 
 \end{align*}
-We focus on the squared exponential kernel, where $\theta$ comprises
+We focus on the exponentiated quadratic kernel, where $\theta$ comprises
 two hyperparameters, $\ell$, the length-scale, and $\alpha$, the marginal
 standard deviation:
 \begin{align} \label{kern}
@@ -295,6 +298,50 @@ posterior, and drastically simplifies the computational problem
 posterior without limiting the model to configurations that don't fit the data
 well while also accurately relfecting prior beliefs. 
 
+\subsection{Identifiability GP}
+
+% Rewrite this section with orthogonal and likelihood ratio test
+% talk about GP nonID for matern and ID for expon. quad
+
+In order to estimate unknown parameters in a parametric statistical model using
+maximum likelihood, the likelihood must change its value when evaluated at
+distinct values of the parameters. If that is not the case, then the parameter
+is said to be nonidentifiable. Intuitively, if two values of a parameter
+generate two identical datasets, how can we expect to extract information about
+that parameter from the data? Formally, we have a vector-valued random variable
+$Z \in \R^L$, with a family of densities, $p(z | \gamma)$, where $\gamma$ are
+unknown in $\R^S$. If $\gamma_1, \gamma_2 \in \R^S$ and 
+\begin{align*}
+  p(z | \gamma_1) = p(z | \gamma_2) \forall z \in \R^L
+\end{align*}
+then we can say that $\gamma$ is nonidentified. A example of nonidentifiability
+is a normal density for $z \in \R^1$ parameterized with two location
+parameters, $\beta$ and $\psi$. The likelihood is invariant to an additive
+shift $c$ to $\beta$ and a negative shift $c$ to $\psi$ (or vice-versa). Thus,
+the likelihood does not have a maximum with respect to $\beta$ and $\psi$. Note
+that this example is pathological, and can be alleviated by using a single
+location parameter. Nevertheless, it is instructive as to the flavor of
+identifiability problems which can occur when the data do not constrain our
+estimate of the parameter. The classical definition of nonidentifiable provided
+above must hold for all $z$. Thus, classically, nonidentifiability is solely a
+property of the statitistical model.
+
+The identifiability of Gaussian processes depends on the choice of kernel.
+Estimators for length-scale and marginal standard deviation in M\'{a}tern
+kernels are inconsistent \cite{zhang2004inconsistent}, but estimators for these
+same parameters are weakly consistent in exponentiated quadratic covariance
+functions \cite{abt1998fisher}. 
+
+For Bayesian inference, true nonidentifiability is fraught with danger because
+a proper Bayesian analysis must contend with all possible model configurations
+consistent with the observed data. If the model is nonidentified the sampler
+will have to explore an infinitely diffuse posterior with infinite
+probability mass. Incorporating proper priors, however, will yield a proper
+posterior, and drastically simplifies the computational problem
+\cite{xie2004note}. The challenge is to use priors that effectively shape the
+posterior without limiting the model to configurations that don't fit the data
+well while also accurately relfecting prior beliefs. 
+
 \subsubsection{Weak Identifiability}
 
 This whole section is vague, but I'm not sure how to properly and precisely
@@ -334,10 +381,25 @@ space.
 
 \subsection{Weak identifiability in GPs}
 
+% Show plot of likelihood profile vs. length-scale
+% talk about data defining 
+
+% Fake ridge for GP exponentiated quadratic
+% ridge for exponential kernel
+
+% plot prior vs. posterior for weakly identified
+
 GPs on a fixed domain will always exhibit weak identifiability 
 at length-scales that far exceed the scale of the data. This is
 to be expected as the likelihood is essentially (what does essentially
 mean?) flat (we should add some likelihood plots here). 
+
+On the other hand, we must consider the spacing/design of our $x$ observations.
+There is very little information in the data about what the process looks like
+below the scale of the data. We necessarily are blind to the high-frequency 
+(relative to the data spacing) properties of the GP.
+
+In setting priors, we should think about what the data 
 
 \citet{rasmussen2005gaussian} show that a kernel $k(\boldsymbol{\tau})$ can
 represented in the frequency domain by its Fourier transform:
