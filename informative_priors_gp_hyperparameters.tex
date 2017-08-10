@@ -96,14 +96,22 @@
   Rob Trangucci \\
   Applied Statistics Center\\
   Columbia University\\
-  New York, NY 10027 \\
-  \texttt{rnt2101@columbia.edu} \\
+  \texttt{robert.trangucci@gmail.com} 
   \and
-  Michael Betancourt \\
+  \textbf{Michael Betancourt} \\
   Applied Statistics Center \\
   Columbia University \\
-  New York, NY 10027 \\
-  \texttt{betanalpha@gmail.com} \\
+  \texttt{betanalpha@gmail.com} 
+  \and
+  \textbf{Aki Vehtari} \\
+  Department of Computer Science \\
+  Aalto University \\
+  \texttt{aki.vehtari@aalto.fi} 
+  \and
+  \textbf{Dan Simpson} \\
+  Department of Statistics \\
+  University of Toronto \\
+  \texttt{dp.simpson@gmail.com} 
 }
 
 \begin{document}
@@ -112,15 +120,13 @@
 \maketitle
 
 \begin{abstract}
-  Gaussian processes are measures over functions, and as such, can be used as a
-  rich prior for latent functions in Bayesian statistical models. However, the
-  joint posterior density of the length scale and marginal variance
-  hyperparameters in stationary kernels like the exponentiated quadratic and
-	M\'{a}tern is often weakly informed by the data because of the extreme
-  flexibility of Gaussian process priors. We develop a principled approach for
-  specifying weakly informative priors for length scale hyperparameters that impose
-  soft constraints on the space of functions represented by the Gaussian
-  process prior.
+  Gaussian processes (GP) are measures over functions, and as such, can be used
+  as a rich prior for latent functions in Bayesian statistical models. However,
+  the extreme flexibility of the prior requires weakly informative priors on GP
+  hyperparameters. We develop a principled approach for specifying weakly
+  informative priors for length scale hyperparameters that impose soft
+  constraints on the space of functions represented by the Gaussian process
+  prior.
 \end{abstract}
 
 
@@ -131,36 +137,29 @@ As noted by many authors (\citet{flaxman2015fast},
 \citet{fuglstad2015interpretable}), learning hyperparameters in Gaussian
 process (GP) kernels is notoriously hard. The preponderance of literature has
 focused estimating hyperparameters using marginal maximum likelihood for point
-estimation (\citet{stein2012interpolation}, \citet{rasmussen2005gaussian}, \citet{warnes1987problems}), and
-the asymptotic properties of posterior conditional mean functions in GP
-regressions (\citet{seeger2008information}, \citet{stein2012interpolation},
-\citet{rasmussen2005gaussian}, \citet{williams2000upper}). As applied
-statisticians, we face datasets with finitely many observations. As such there
-will be many sets of hyperparameters that are consistent with our data; picking
-any one set of them will lead to overfitting and poor out-of-sample
-predictions. Instead, we would advocate placing priors over hyperparameters and
-integrate over our uncertainty when making predictions for new data. For
-maximum flexibility in model building, we would like to select weakly
-informative priors, run our MCMC chains to convergence, and calculate posterior
-expectations for our estimands of interest. 
-
-Unfortunately, poorly-chosen weakly informative priors
-can yield large posterior intervals for hyperparameters and lead to wide
-posterior predictive intervals when data are not informative about model
-parameters (\citet{fuglstad2015interpretable}). Thus, we need a better
-understanding of how weakly informative priors interact with the likelihood
-under a Gaussian process prior.
+estimation (\citet{stein2012interpolation}, \citet{rasmussen2005gaussian},
+\citet{warnes1987problems}), and the asymptotic properties of posterior
+conditional mean functions in GP regressions (\citet{seeger2008information},
+\citet{stein2012interpolation}, \citet{rasmussen2005gaussian},
+\citet{williams2000upper}). As applied statisticians, we face datasets with
+finitely many observations. As such there will be many sets of hyperparameters
+that are consistent with our data; picking any one set of them will lead to
+overfitting and poor out-of-sample predictions. Instead, we advocate placing
+priors over hyperparameters and integrate over our uncertainty when making
+predictions for new data. In order to do this we need to engineer principled
+priors that regularize the Gaussian process sufficiently to admit practical
+fitting without compromising its statistical utility
 
 In order to gain insight into the empirical behavior of different priors, we
 explore how efficiently 4 weakly informative priors can extract known
 parameters in 12 different data generating processes, using techniques from
-\citet{cook2012validation}. We chose to study the deliberately simple 1-D
-Gaussian process regression model in order to elucidate the pathologies
-inherent in posterior inference over kernel hyperparameters. Additionally, we
-aspire to develop a coherent framework to choose weakly informative priors that
-can effectively regularize unidentifiabilities. It is important to note that
-GPs in higher-dimensional spaces will likely display different idiosyncrasies
-than observed in the low-dimensional setting and these warrant further study.
+\citet{cook2012validation}. We deliberately chose to study a simple 1-D
+Gaussian process regression model in order to avoid the increased complexities
+of fitting a multi-dimensional GP.  Additionally, we aspire to develop a
+coherent framework to choose weakly informative priors that can effectively
+regularize nonidentifiabilities.  It is important to note that GPs in
+higher-dimensional spaces will likely display different idiosyncrasies than
+observed in the low-dimensional setting and these warrant further study.
 
 In section \ref{background} we define the 1-D Gaussian process regression setting,
 the hyperparameters of interest, and the mathematical basis for the manifestations
@@ -172,7 +171,7 @@ of our experiments. Stan code is presented in the appendix.
 
 \subsection{Gaussian processes regression}
 
-The typical regression setting for observed univariate data, as presented in \citet{flaxman2015fast},
+The typical regression setting for a univariate response, $y$, as presented in \citet{flaxman2015fast},
 $y_i \in \R, x_i \in \R^M\, i \in {1,\dots,n}$:
 \begin{align*}
   \theta & \sim g(\phi) \\
@@ -249,16 +248,18 @@ For the $\Exp{C_u | \theta}$ exponentiated quadratic kernel:
 We can see that at $u = 0$, we are left with $\Exp{C_u | \alpha, \ell} = T / \pi \ell$.  
 
 However, at $u \neq 0$ $\alpha$ and $\ell$ are conflated in $\Exp{C_u | \alpha,
-\ell}$.  This is an inevitability of the parameterization of the exponentiated
-quadratic kernel, and this feature of GPs can lead to problems when 
-estimating $\alpha$ and $\ell$ from data.
+\ell}$.  This means that we would not be able to identify $\alpha$ and $\ell$
+separately with number of crossings at different values of $u$.  This is an
+inevitability of the parameterization of the exponentiated quadratic kernel,
+and this feature of GPs can lead to problems when estimating $\alpha$ and
+$\ell$ from data.
 
 \subsection{Identifiability}
 
 In order to estimate unknown parameters in a parametric statistical model using
 maximum likelihood, the likelihood must change its value when evaluated at
 distinct values of the parameters. If that is not the case, then the parameter
-is said to be unidentifiable. Intuitively, if two values of a parameter
+is said to be nonidentifiable. Intuitively, if two values of a parameter
 generate two identical datasets, how can we expect to extract information about
 that parameter from the data? Formally, we have a vector-valued random variable
 $Z \in \R^L$, with a family of densities, $p(z | \gamma)$, where $\gamma$ are
@@ -266,38 +267,77 @@ unknown in $\R^S$. If $\gamma_1, \gamma_2 \in \R^S$ and
 \begin{align*}
   p(z | \gamma_1) = p(z | \gamma_2) \forall z \in \R^L
 \end{align*}
-then we can say that $\gamma$ is unidentified. A example of unidentifiability is
-a normal density for $z \in \R^1$ parameterized with two location parameters,
-$\beta$ and $\psi$. The likelihood is invariant to an additive shift $c$ to
-$\beta$ and a negative shift $c$ to $\psi$ (or vice-versa). Thus, the
-likelihood does not have a maximum with respect to $\beta$ and $\psi$. Note
+then we can say that $\gamma$ is nonidentified. A example of nonidentifiability
+is a normal density for $z \in \R^1$ parameterized with two location
+parameters, $\beta$ and $\psi$. The likelihood is invariant to an additive
+shift $c$ to $\beta$ and a negative shift $c$ to $\psi$ (or vice-versa). Thus,
+the likelihood does not have a maximum with respect to $\beta$ and $\psi$. Note
 that this example is pathological, and can be alleviated by using a single
 location parameter. Nevertheless, it is instructive as to the flavor of
 identifiability problems which can occur when the data do not constrain our
-estimate of the parameter. The classical definition of unidentifiable provided
-above must hold for all $z$. 
+estimate of the parameter. The classical definition of nonidentifiable provided
+above must hold for all $z$. Thus, classically, nonidentifiability is solely a
+property of the statitistical model.
 
-For Bayesian inference, identifiability is more nuanced. If we are faced with
-classically unidentified parameters like above, we can put proper priors on
-them and sample from the posterior, as shown in \cite{xie2004note}. In some
-sense, any set of priors will do because the parameters cannot be informed by
-any dataset. The posterior estimates are only possible through constraining the
-parameters using priors. 
+The identifiability of Gaussian processes depends on the choice of kernel.
+Estimators for length-scale and marginal standard deviation in M\'{a}tern
+kernels are inconsistent \cite{zhang2004inconsistent}, but estimators for these
+same parameters are weakly consistent in exponentiated quadratic covariance
+functions \cite{abt1998fisher}. 
 
-The Gaussian process parameterized with an isotropic kernel like
-\ref{kern} lies on the spectrum between classically unidentified and
-classically identified. If the data do not adequately constrain the parameters
-$\alpha$ and $\ell$, we need to add additional structure to the posterior in
-the form of priors that limit probability mass in the tail. If we do not
-we can get behavior that appears like classical unidentifiability in the 
-tail of the distribution: a flat log-posterior along $\ell$'s axis. 
+For Bayesian inference, true nonidentifiability is fraught with danger because
+a proper Bayesian analysis must contend with all possible model configurations
+consistent with the observed data. If the model is nonidentified the sampler
+will have to explore an infinitely diffuse posterior with infinite
+probability mass. Incorporating proper priors, however, will yield a proper
+posterior, and drastically simplifies the computational problem
+\cite{xie2004note}. The challenge is to use priors that effectively shape the
+posterior without limiting the model to configurations that don't fit the data
+well while also accurately relfecting prior beliefs. 
+
+\subsubsection{Weak Identifiability}
+
+This whole section is vague, but I'm not sure how to properly and precisely
+define the weak identifiability. My sense is that it can be connected to 
+Goel's paper \cite{goel1981information}. Thoughts?
+
+In Bayesian inference, weak identfiability is a function of both the model and
+the observed, finite data at hand. For certain models and certain datasets, a
+parameter in a model can be nearly nonidentified. That is, the prior has a
+strong influence on the posterior. However, the data do contain some
+information, however limited, as to the value of the hyperparameter. 
+
+Guidance for a formal definition of weak identifiability can be found in Goel
+et al.  (\cite{goel1981information}) which defines several information-based
+measures of the gain in information about parameters after observing data. 
+
+(I'd like to build this idea out more, how do we figure out how informative our
+ informative priors are to the posterior?)
+
+If the data do not adequately (can we quantify adequately?) constrain the
+parameters $\alpha$ and $\ell$, we need to add additional structure to the
+posterior in the form of priors that limit probability mass in the tail. If we
+do not we can get behavior that appears like classical nonidentifiability in
+the tail of the distribution: a flat log-posterior along $\ell$'s axis. 
 
 We use the term ``weak identifiability'' to refer to a pathology wherein
-parameters exhibit behavior consistent with classical unidentifiability in
+parameters exhibit behavior consistent with classical nonidentifiability in
 certain regions of parameter space. This occurs when the data are not
-informative about these parameters.  
+informative about these parameters.  This is not to be confused with the
+classical defintion of weak identifiability, which is solely a characteristic
+of the statistical model. Classical weak identfiability occurs when the
+asymptotic difference between two estimates of the Fisher information, namely
+the variance of the score and the negative expected value of the Hessian of the
+log-likelihood, does not converge to zero \cite{andrews2015maximum}. The lack
+of convergence of the two measures occurs for certain regions of the parameter
+space.
 
 \subsection{Weak identifiability in GPs}
+
+GPs on a fixed domain will always exhibit weak identifiability 
+at length-scales that far exceed the scale of the data. This is
+to be expected as the likelihood is essentially (what does essentially
+mean?) flat (we should add some likelihood plots here). 
 
 \citet{rasmussen2005gaussian} show that a kernel $k(\boldsymbol{\tau})$ can
 represented in the frequency domain by its Fourier transform:
@@ -330,7 +370,7 @@ but the sparsity of the data necessarily means we will not be able to learn the
 fine-resolution structure of the spectral density.
 
 Note that the intuition provided above does not fit the definition of 
-classical unidentifiability; the spectral density certainly does change
+classical nonidentifiability; the spectral density certainly does change
 values for two distinct sets of hyperparameters. However, sparse data
 may not provide enough information to effectively constrain the hyperparameters.
 
@@ -410,7 +450,7 @@ estimating $\alpha$.
 
 \subsection{Datasets}
 
-We simulated 100 datasets of 500 uniformly sampled data points on the domain
+We simulated 1000 datasets of 50 uniformly sampled data points on the domain
 from $[-2, 2]$ from a Gaussian process regression for 12 sets of parameters.
 The data generating processes vary in the severity of the nonlinearity in the
 Gaussian process prior, induced by scaling $\ell$ from near $0.04$ to $2.54$.
