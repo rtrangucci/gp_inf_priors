@@ -1,0 +1,206 @@
+\documentclass{article}
+
+% if you need to pass options to natbib, use, e.g.:
+% \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading nips_2016
+%
+% to avoid loading the natbib package, add option nonatbib:
+%\usepackage[nonatbib]{nips_2016}
+
+%\usepackage{nips}
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+\usepackage[final]{nips_2016}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{latexsym}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{float}
+\usepackage{subfigure}
+\usepackage{amsmath}
+\usepackage{MnSymbol}
+\usepackage{makeidx}
+\usepackage{fancyhdr}
+\usepackage{relsize}
+\pagestyle{fancy}
+\usepackage{lastpage}
+\usepackage{url}
+\usepackage{mathrsfs}
+
+\newcommand{\F}{\ensuremath{\mathcal F}}
+\DeclareMathSymbol{\R}{\mathbin}{AMSb}{"52}
+\newcommand{\f}{\ensuremath{\mathcal f}}
+\newcommand{\C}{\ensuremath{\mathcal C}}
+\newcommand{\M}{\ensuremath{\mathcal M}}
+\renewcommand{\H}{\ensuremath{\mathcal H}}
+\newcommand{\pisys}{\ensuremath{\mathscr{L}}}
+\newcommand{\lsys}[1]{\ensuremath{\lambda \lp #1 \rp}}
+\newcommand{\A}{\ensuremath{\mathcal A}}
+\newcommand{\E}{\ensuremath{\mathcal E}}
+\renewcommand{\L}{\ensuremath{\mathcal L}}
+\newcommand{\norm}[1]{\ensuremath{\mathcal \| #1 \|}}
+\newcommand{\Exp}[1]{\ensuremath{\mathbb{E} \lb #1 \rb}}
+\newcommand{\condExp}[2]{\ensuremath{\mathbb{E} \lb #1 | #2 \rb}}
+\newcommand{\lp}{\ensuremath{\left(}}
+\newcommand{\rp}{\ensuremath{\right)}}
+\newcommand{\lb}{\ensuremath{\left[}}
+\newcommand{\rb}{\ensuremath{\right]}}
+\newcommand{\B}[1]{\ensuremath{\mathcal B\lp #1 \rp}}
+\newcommand{\Pset}[1]{\ensuremath{\mathcal P\lp #1 \rp}}
+\newcommand{\siga}[1]{\ensuremath{\sigma\lp #1 \rp}}
+\newcommand{\Xrv}[1]{\ensuremath{X\lp #1 \rp}}
+\newcommand{\Xrvi}[1]{\ensuremath{X \inv \lp #1 \rp}}
+\newcommand{\Yrv}[1]{\ensuremath{Y\lp #1 \rp}}
+\newcommand{\Prob}[1]{\ensuremath{\Pb\lp #1 \rp}}
+\newcommand{\inv}{\ensuremath{^{-1}}}
+\newcommand{\iprod}[2]{\ensuremath{\llangle #1, #2 \rrangle}}
+\newcommand{\twopartdef}[4]
+{
+	\left\{
+		\begin{array}{ll}
+			#1 & \mbox{if } #2 \\
+			#3 & \mbox{if } #4
+		\end{array}
+	\right.
+}
+\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+
+\title{Prior Formulation for Gaussian Process Hyperparameters}
+
+% The \author macro works with any number of authors. There are two
+% commands used to separate the names and addresses of multiple
+% authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to
+% break the lines. Using \AND forces a line break at that point. So,
+% if LaTeX puts 3 of 4 authors names on the first line, and the last
+% on the second line, try using \AND instead of \And before the third
+% author name.
+
+\author{
+  Rob Trangucci \\
+  Applied Statistics Center\\
+  Columbia University\\
+  \texttt{robert.trangucci@gmail.com} 
+  \and
+  \textbf{Michael Betancourt} \\
+  Applied Statistics Center \\
+  Columbia University \\
+  \texttt{betanalpha@gmail.com} 
+  \and
+  \textbf{Aki Vehtari} \\
+  Department of Computer Science \\
+  Aalto University \\
+  \texttt{aki.vehtari@aalto.fi} 
+  \and
+  \textbf{Dan Simpson} \\
+  Department of Statistics \\
+  University of Toronto \\
+  \texttt{dp.simpson@gmail.com} 
+}
+
+\begin{document}
+% \nipsfinalcopy is no longer used
+
+\maketitle
+
+\begin{abstract}
+  Gaussian processes (GP) are measures over functions, and as such, can be used
+  as a rich prior for latent functions in Bayesian statistical models. Despite
+	the 
+	
+	
+	However,
+  the extreme flexibility of the prior requires weakly informative priors on GP
+  hyperparameters. We develop a principled approach for specifying weakly
+  informative priors for length scale hyperparameters that impose soft
+  constraints on the space of functions represented by the Gaussian process
+  prior.
+\end{abstract}
+
+
+\section{Introduction}
+
+\section{Difficulties inferring hyperparameters in GPs}
+
+\begin{itemize}
+  \item 
+\end{itemize}
+
+\subsection{Mat\'{e}rn}
+
+\begin{itemize}
+  \item We know Matern should be dangerous in asymptotic regime from theory (ridge!)
+  \item Matern also resolves ridge in finite data regime
+  \item 
+\end{itemize}
+
+\subsection{Exp. quad}
+
+\begin{itemize}
+  \item 
+\end{itemize}
+
+\section{Requirements for prior specs}
+
+\subsection{Length-scale reqs}
+
+Positive support, zero avoiding. Cut off small length-scales, cut off large
+length-scales.
+
+\begin{itemize}
+  \item Knowledge of the process motivates upper and lower bounds (physical)
+  \item Knowledge of design of the sampling scheme for GP (no matter how much data, can't sample below certain length-scales)
+  \item Largest and smallest covariate range motivated prior for computational stability
+\end{itemize}
+
+\begin{itemize}
+  \item Gamma
+  \item inv gamma
+  \item GIG
+  \item log-normal
+\end{itemize}
+
+\subsection{Marginal signal scale and noise scale}
+
+Knowledge of the total variance in y and expected noise, or expected signal
+variance, shrink towards zero, can have sharp tail be
+
+\section{Experiments}
+
+\subsection{n = 10}
+
+\subsection{n = 300}
+
+\section{Discussion}
+
+Hopefully, shapes of priors don't matter, only the upper and lower bounds. We
+see that fat tailed and thin tailed distributions that agree on small
+lenghth-scales lead to nearly equivalent posteriors that don't have the ridges.
+This is because we have sigma tail prior cutting off the section that part of
+rho space.
+
+\section{Conclusion}
+
+In D > 1, GPs present even larger challenges because of the fact that the
+number of interpolating functions grows exponentially. Additionally, 
+infill becomes that much more out of reach because of the peculiar
+problem that most points are far away from one another in high dimensions.
+
+
+\end{document}
