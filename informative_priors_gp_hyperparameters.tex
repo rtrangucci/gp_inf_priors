@@ -211,10 +211,10 @@ The Mat\'{e}rn 5/2 kernel:
 \begin{align} \label{kern_quad}
   k(x_i, x_j | \alpha, \ell) = \alpha^2 
 	\left( 
-	1 + \dfrac{\sqrt{5}\abs{x_{i} - x_{j}}}{\ell} + \dfrac{5(x_{i} - x_{j})^2}{3\ell^2}
+	1 + \dfrac{\sqrt{5} |x_{i} - x_{j}}|{\ell} + \dfrac{5(x_{i} - x_{j})^2}{3\ell^2}
 	\right)
 	\exp \left(
-	- \dfrac{\sqrt{5}\abs{x_{i} - x_{j}}}{\ell} 
+	- \dfrac{\sqrt{5}{|x_{i} - x_{j}}}|{\ell} 
 \right)
 \end{align}
 With $\ell$ and $\alpha$ fixed, inference of $f(x | \, \mathbf{y}, \theta)$ is
@@ -308,7 +308,7 @@ the data well while also accurately relfecting prior beliefs.
 The non-identifiability of the Mat\'{e}rn presents a clear problem for Baysian
 inference in that require proper priors. However, the fact that the
 exponentiated quadratic kernel is the limit of the as Mat\'{e}rn $\nu
-\righarrow \infty$ will present problems for Bayesian inference, and will thus
+\rightarrow \infty$ will present problems for Bayesian inference, and will thus
 also require carefully constructed priors. However, the flexibility of GPs
 parameterized with the aforementioned kernels requires more than solely proper
 priors to yield practically useful priors for inference when faced with sparse
