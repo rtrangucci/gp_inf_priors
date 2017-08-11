@@ -149,9 +149,13 @@ any one set of them will lead to overfitting and poor out-of-sample
 predictions. Instead, we advocate placing priors over hyperparameters and
 integrate over our uncertainty when making predictions for new data. The
 empirical advantage of full Bayesian inference versus point estimation are
-well-documented (\citet{vehtariloo}).  In order to do this we need to engineer
-principled priors that regularize the Gaussian process sufficiently to admit
-practical fitting without compromising its statistical utility
+well-documented (\citet{vehtariloo}). 
+%% Add discussion of full-Bayes and MML theoretical considerations 
+In order to do this we need to engineer principled priors that regularize the
+Gaussian process sufficiently to admit practical fitting without compromising
+its statistical utility. In this paper we'll investigate the consequences of
+priors on hyperaparamters from theoretical and empirical perspectives, with a
+focus on the finite data regime.
 
 In order to gain insight into the empirical behavior of different priors, we
 explore how efficiently 4 weakly informative priors can extract known
@@ -170,9 +174,12 @@ of weak identifiability in kernel hyperparameters. In section \ref{experiment}, 
 outline the experimental set up, and in section \ref{results} we discuss the results 
 of our experiments. Stan code is presented in the appendix.
 
+
 \section{Background} \label{background}
 
 \subsection{Gaussian processes regression}
+
+% Add definition of Matern kernel
 
 The typical regression setting for a univariate response, $y$, as presented in \citet{flaxman2015fast},
 $y_i \in \R, x_i \in \R^M\, i \in {1,\dots,n}$:
@@ -451,6 +458,9 @@ subsequently inferring $\alpha$, $\ell$, and $\delta$ by using Stan.
 
 \subsection{Priors}
 
+% Add GIG, talk about motivation for inverse gamma, compare
+% gammas get rid of weibull. Leave 
+
 Limiting behavior of GPs is an important driver of weak identifiability, so we
 chose priors that differed in probability mass near zero and mass
 in the tails of the densities, but that were similar in mass at other regions
@@ -511,6 +521,9 @@ applying well-constructed priors to $\ell$ we can mitigate problems in
 estimating $\alpha$. 
 
 \subsection{Datasets}
+
+% Add small data simulations, big data simulations
+% for matern and 
 
 We simulated 1000 datasets of 50 uniformly sampled data points on the domain
 from $[-2, 2]$ from a Gaussian process regression for 12 sets of parameters.
