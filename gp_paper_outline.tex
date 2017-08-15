@@ -136,24 +136,34 @@
 
 \section{Introduction}
 
+\subsection{Prior art}
+
+\subsection{GP as priors}
+
+\subsection{GP regression}
+
 \section{Difficulties inferring hyperparameters in GPs}
 
 \begin{itemize}
-  \item 
+  \item Popular classes of kernels under finite data
 \end{itemize}
 
 \subsection{Mat\'{e}rn}
 
 \begin{itemize}
   \item We know Matern should be dangerous in asymptotic regime from theory (ridge!)
+  \item talk about theory for Matern nonidentifiability (equivalent measures, infill)
   \item Matern also resolves ridge in finite data regime
-  \item 
 \end{itemize}
 
 \subsection{Exp. quad}
 
 \begin{itemize}
-  \item 
+  \item Exp quad has weakly consistent estimators for params
+  \item Still have finite data problems, and look, we have the ridge!
+  \item Infill asymptotics under which weak consistency is proved are far away
+  \item Need very fine data to inform full parameter space
+  \item We put spectral density point in this section as intuition behind ridge
 \end{itemize}
 
 \section{Requirements for prior specs}
@@ -170,16 +180,41 @@ length-scales.
 \end{itemize}
 
 \begin{itemize}
-  \item Gamma
+  \item Gamma, log-normal
   \item inv gamma
   \item GIG
-  \item log-normal
+  \item half-cauchy (We know these are bad, but they're commonly used)
+  \item half-normal (We know these are bad, but they're commonly used)
 \end{itemize}
 
-\subsection{Marginal signal scale and noise scale}
+Ways to think about informativeness of priors
 
-Knowledge of the total variance in y and expected noise, or expected signal
-variance, shrink towards zero, can have sharp tail be
+\begin{itemize}
+  \item Effective degrees of freedom (alpha plus rho)
+  \item Zero crossings (only exist for 1D for smooth GPs, because rough GPs
+    don't have them) 
+  \item Higher level upcrossings $\alpha$ $\rho$ interaction
+\end{itemize}
+
+\subsection{Marginal signal scale}
+
+Due to ridge, rho / alpha interaction necessitates thinking about prior
+for alpha and the joint prior for rho and alhpa.
+
+The light tail on alpha, cuts off big values of rho, which is how the 
+priors interact.
+
+\subsection{Likelihood parameters}
+
+Normal -> $\sigma$
+NB -> overdispersion
+
+In GP regression where likelihood is normal, we also have ID problems
+with alpha interacting with sigma, and this is common and well-understood
+in Gaussian noise and Gaussian latent variable models.
+
+Perhaps it would most sense to think of total variance of $Y$ and SN ratio
+deriving $\alpha$ and $\sigma$ from these qtys.
 
 \section{Experiments}
 
@@ -189,13 +224,15 @@ variance, shrink towards zero, can have sharp tail be
 
 \section{Discussion}
 
+\subsection{Lessons in 1D}
+
 Hopefully, shapes of priors don't matter, only the upper and lower bounds. We
 see that fat tailed and thin tailed distributions that agree on small
 lenghth-scales lead to nearly equivalent posteriors that don't have the ridges.
 This is because we have sigma tail prior cutting off the section that part of
 rho space.
 
-\section{Conclusion}
+\subsection{Extensions to higher dims}
 
 In D > 1, GPs present even larger challenges because of the fact that the
 number of interpolating functions grows exponentially. Additionally, 
