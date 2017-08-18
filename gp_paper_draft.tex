@@ -1,0 +1,466 @@
+\documentclass{article}
+
+% if you need to pass options to natbib, use, e.g.:
+% \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading nips_2016
+%
+% to avoid loading the natbib package, add option nonatbib:
+%\usepackage[nonatbib]{nips_2016}
+
+%\usepackage{nips}
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+\usepackage[final]{nips_2016}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{latexsym}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{float}
+\usepackage{subfigure}
+\usepackage{amsmath}
+\usepackage{MnSymbol}
+\usepackage{makeidx}
+\usepackage{fancyhdr}
+\usepackage{relsize}
+\pagestyle{fancy}
+\usepackage{lastpage}
+\usepackage{url}
+\usepackage{mathrsfs}
+
+\newcommand{\F}{\ensuremath{\mathcal F}}
+\DeclareMathSymbol{\R}{\mathbin}{AMSb}{"52}
+\newcommand{\f}{\ensuremath{\mathcal f}}
+\newcommand{\C}{\ensuremath{\mathcal C}}
+\newcommand{\M}{\ensuremath{\mathcal M}}
+\renewcommand{\H}{\ensuremath{\mathcal H}}
+\newcommand{\pisys}{\ensuremath{\mathscr{L}}}
+\newcommand{\lsys}[1]{\ensuremath{\lambda \lp #1 \rp}}
+\newcommand{\A}{\ensuremath{\mathcal A}}
+\newcommand{\E}{\ensuremath{\mathcal E}}
+\renewcommand{\L}{\ensuremath{\mathcal L}}
+\newcommand{\norm}[1]{\ensuremath{\mathcal \| #1 \|}}
+\newcommand{\Exp}[1]{\ensuremath{\mathbb{E} \lb #1 \rb}}
+\newcommand{\condExp}[2]{\ensuremath{\mathbb{E} \lb #1 | #2 \rb}}
+\newcommand{\lp}{\ensuremath{\left(}}
+\newcommand{\rp}{\ensuremath{\right)}}
+\newcommand{\lb}{\ensuremath{\left[}}
+\newcommand{\rb}{\ensuremath{\right]}}
+\newcommand{\B}[1]{\ensuremath{\mathcal B\lp #1 \rp}}
+\newcommand{\Pset}[1]{\ensuremath{\mathcal P\lp #1 \rp}}
+\newcommand{\siga}[1]{\ensuremath{\sigma\lp #1 \rp}}
+\newcommand{\Xrv}[1]{\ensuremath{X\lp #1 \rp}}
+\newcommand{\Xrvi}[1]{\ensuremath{X \inv \lp #1 \rp}}
+\newcommand{\Yrv}[1]{\ensuremath{Y\lp #1 \rp}}
+\newcommand{\Prob}[1]{\ensuremath{\Pb\lp #1 \rp}}
+\newcommand{\inv}{\ensuremath{^{-1}}}
+\newcommand{\iprod}[2]{\ensuremath{\llangle #1, #2 \rrangle}}
+\newcommand{\twopartdef}[4]
+{
+	\left\{
+		\begin{array}{ll}
+			#1 & \mbox{if } #2 \\
+			#3 & \mbox{if } #4
+		\end{array}
+	\right.
+}
+\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+
+\title{Prior Formulation for Gaussian Process Hyperparameters}
+
+% The \author macro works with any number of authors. There are two
+% commands used to separate the names and addresses of multiple
+% authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to
+% break the lines. Using \AND forces a line break at that point. So,
+% if LaTeX puts 3 of 4 authors names on the first line, and the last
+% on the second line, try using \AND instead of \And before the third
+% author name.
+
+\author{
+  Rob Trangucci \\
+  Applied Statistics Center\\
+  Columbia University\\
+  \texttt{robert.trangucci@gmail.com} 
+  \and
+  \textbf{Michael Betancourt} \\
+  Applied Statistics Center \\
+  Columbia University \\
+  \texttt{betanalpha@gmail.com} 
+  \and
+  \textbf{Aki Vehtari} \\
+  Department of Computer Science \\
+  Aalto University \\
+  \texttt{aki.vehtari@aalto.fi} 
+  \and
+  \textbf{Dan Simpson} \\
+  Department of Statistics \\
+  University of Toronto \\
+  \texttt{dp.simpson@gmail.com} 
+}
+
+\begin{document}
+% \nipsfinalcopy is no longer used
+
+\maketitle
+
+\begin{abstract}
+  Gaussian processes (GP) are measures over functions, and as such, can be used
+  as a rich prior for latent functions in Bayesian statistical models.
+  Unfortunately, marginalizing over hyperparameters in popular GP kernels like
+  the Mat\'{e}rn and the exponentiated quadratic is challenging due to the
+  asymptotic and pre-asymptotic properties of these kernels. Successfully
+  performing full-Bayesian inference on models using GPs as priors requires
+  weakly informative priors on length-scale and signal marginal standard
+  deviation. After delving into the We develop a principled approach for
+  specifying weakly informative priors for length scale hyperparameters that
+  impose soft constraints on the space of functions represented by the Gaussian
+  process prior.
+\end{abstract}
+
+
+\section{Introduction}
+
+As noted by many authors (\citet{flaxman2015fast},
+\citet{stein2012interpolation}, \citet{rasmussen2005gaussian},
+\citet{fuglstad2015interpretable}), learning hyperparameters in Gaussian
+process (GP) kernels is notoriously hard. The preponderance of literature has
+focused estimating hyperparameters using marginal maximum likelihood for point
+estimation (\citet{stein2012interpolation}, \citet{rasmussen2005gaussian},
+\citet{warnes1987problems}), and the asymptotic properties of posterior
+conditional mean functions in GP regressions (\citet{seeger2008information},
+\citet{stein2012interpolation}, \citet{rasmussen2005gaussian},
+\citet{williams2000upper}) with some exceptions such as
+\citet{neal1998regression} and \citet{vanhatalo2013gpstuff}. As applied
+statisticians, we face datasets with finitely many observations. As such there
+will be many sets of hyperparameters that are consistent with our data;
+selecting any one point will lead to overfitting and poor out-of-sample
+predictions. Instead, we advocate placing priors over hyperparameters and
+integrate over our uncertainty when making predictions for new data. The
+empirical advantage of full Bayesian inference versus point estimation are
+well-documented (\citet{vehtariloo}). In order to do this we need to engineer
+principled priors that regularize the Gaussian process sufficiently to admit
+practical fitting without compromising its statistical utility. In this paper
+we'll investigate the consequences of priors on hyperaparamters from
+theoretical and empirical perspectives, with a focus on the finite data regime.
+
+In section \ref{prior_art} we define the 1-D Gaussian process regression setting,
+the hyperparameters of interest, and the mathematical basis for the manifestations
+of weak identifiability in kernel hyperparameters. In section \ref{experiment}, we 
+outline the experimental set up, and in section \ref{results} we discuss the results 
+of our experiments. Stan code is presented in the appendix.
+
+\subsection{Prior art} \label{prior_art}
+
+The typical setting for a Gaussian process prior over a function $f(x)$:
+%
+\begin{align*}
+  \theta & \sim g(\phi) \\
+  f(x) & \sim \mathcal{GP}\lp \mu(x),
+  K_\theta(x, x) \rp 
+\end{align*}
+%
+where $\text{GP}$ is a stochastic process from which finite-sample realizations are
+multivariate Gaussian, and which is completely specified its mean vector $\mu$
+and its covariance matrix $K_\theta(x, x)$. The $i, j$ th
+element of $K_\theta(x, x)$:
+\begin{align*}
+  \text{cov}(f(x_i), f(x_j)) = k(x_i, x_j | \theta) 
+\end{align*}
+We focus on the exponentiated quadratic kernel, and the Mat\'{e}rn 5/2 kernel
+where $\theta$ comprises two positive, real-valued hyperparameters, $\ell$, the
+length-scale, and $\alpha$, the marginal standard deviation.  The exponentiated
+quadratic:
+\begin{align} \label{kern_quad}
+  k(x_i, x_j | \alpha, \ell) = \alpha^2 
+\exp \left(
+	- \dfrac{|x_{i} - x_{j}|^2}{2\ell^2}
+\right)
+\end{align}
+%
+The Mat\'{e}rn 5/2 kernel:
+%
+\begin{align} \label{kern_quad}
+  k(x_i, x_j | \alpha, \ell) = \alpha^2 
+	\left( 
+	1 + \dfrac{\sqrt{5} |x_{i} - x_{j}|}{\ell} + \dfrac{5|x_{i} - x_{j}|^2}{3\ell^2}
+	\right)
+	\exp \left(
+	- \dfrac{\sqrt{5}{|x_{i} - x_{j}|}}{\ell} 
+\right)
+\end{align}
+We can connect $f$ to the likelihood in any number of ways, such as using $f$
+as a prior for the conditional mean function in a regression setting after
+observing paired observations $y, x, \in \{1,\dots,N\}$. We might also use $f$
+as a prior for a random intercept parameter in a hierarchical model where there
+exists a real, group-level measurement, such as age, or income in a
+hierarchical voter turnout model.
+
+When using GP priors in the context of regression and a Gaussian likelihood, $y \sim
+\mathcal{N}(f(x), \sigma)$, we can derive the exact posterior density $p\lp f(x) |
+\mathbf{y}\rp$, provided $\ell$ and $\alpha$ are fixed. With $f(x)$ and $\mathbf{y}$
+jointly normally distributed:
+\begin{align*} \begin{pmatrix} f(x)\\ \mathbf{y} \\ \end{pmatrix} \sim
+\mathcal{N} \lp \begin{pmatrix} \mathbf{0} \\ \mathbf{0} \end{pmatrix} ,\,\,
+  \begin{pmatrix} K_\theta &
+  K_\theta  \\ K_\theta &
+  K_\theta + \sigma ^ 2 \mathbf{I}\\ \end{pmatrix} \rp
+\end{align*}
+We can derive $p\lp f(x) | \mathbf{y}\rp$ from the properties of the conditional normal
+distribution: 
+\begin{align*}
+  f(x) \sim
+  \mathcal{N}(K_\theta  (K_\theta + \sigma ^ 2 \mathbf{I})^{-1}\mathbf{y},  
+  K_\theta - K_\theta (K_\theta + \sigma ^ 2 \mathbf{I})^{-1}K_\theta)
+\end{align*}
+Out-of-sample predictions are generated similarly:
+\begin{align*} 
+  \mathbf{\tilde{y}} \sim
+  \mathcal{N}(&K_\theta(\mathbf{\tilde{x}},\mathbf{x}) (K_\theta(\mathbf{x},\mathbf{x}) +
+  \sigma ^ 2 \mathbf{I})^{-1}\mathbf{y},  
+   \\ & K_\theta(\mathbf{\tilde{x}},\mathbf{\tilde{x}})
+   -K_\theta(\mathbf{\tilde{x}},\mathbf{x}) (K_\theta(\mathbf{x},\mathbf{x}) +
+   \sigma ^ 2 \mathbf{I})^{-1}K_\theta(\mathbf{x},\mathbf{\tilde{x}}) + \sigma
+   ^ 2 \mathbf{I})
+\end{align*}
+However, $\ell$ and $\alpha$ are typically unknown, so we need to infer these
+hyperparameters from the data at hand. $\ell$ and $\alpha$
+will impact our predictions for $\tilde{\mathbf{y}}$. $\alpha^2$ is the
+marginal variance of the stochastic process. For a fixed noise variance,
+$\sigma^2$, increasing the marginal variance of the stochastic process
+increases the signal-to-noise ratio, $\alpha^2 / \sigma^2$ (SN). $\ell$
+controls the process's nonlinearity. 
+
+Naturally, quantifiable characteristics of the GP will involve $\ell$ and $\alpha$ 
+For instance, the expected number of crossings of $f(x)$ on the interval $[0,
+T]$ at level $u$, $\Exp{C_u}$, are solely functions of $\ell$ and $\alpha$. 
+\citet{cramer2004stationary} show that $\Exp{C_u}$:
+\begin{align*} 
+  \Exp{C_u | \theta} = \dfrac{T}{\pi} 
+\sqrt{-\dfrac{k_\theta^{\prime \prime}(0)}{k_\theta(0)}}
+  \text{exp}\left(-\dfrac{u^2}{2k_\theta(0)}\right)
+\end{align*} 
+$\Exp{C_u | \theta}$ for the exponentiated quadratic kernel:
+\begin{align*} 
+  \Exp{C_u | \alpha, \ell} = \dfrac{T}{\pi \ell}\text{exp}\left(-\dfrac{u^2}{2 \alpha ^ 2} \right)
+\end{align*} 
+$\Exp{C_u | \theta}$ for the Mat\'{e}rn 5/2 kernel is:
+% Add formula
+We can see that at $u = 0$, we are left with $\Exp{C_u | \alpha, \ell} = T /
+\pi \ell$.  This characteristic is only valid for kernels with finite second
+derivatives at zero. Kernels like the Mat\'{e}rn 3/2 and the exponential kernel
+(also known as as a Mat\'{e}rn 1/2) have fewer than two derivatives.
+Conditional on having an upcrossing at $x$, if our kernel does not have a
+finite second derivative, there are infinitely many upcrossings in the interval
+$x + \delta x$.
+
+When concerned with expected numbers of crossings away from zero, $\alpha$ and
+$\ell$ are conflated.  This means that we would not be able to identify
+$\alpha$ and $\ell$ separately with number of crossings at different values of
+$u$.  This is an inevitability of the parameterization of the exponentiated
+quadratic kernel, and this feature of GPs can lead to problems when estimating
+$\alpha$ and $\ell$ from data as we will soon see.
+
+\subsection{To marginalize or to maximize?}
+
+With 
+
+\subsection{GP as priors}
+
+If our data arise from a hierarchy we would do well to encode hierarchical
+structure into our prior as the benefits are widely noted (\citet{}). An
+oft-recommended prior to put on $J$ group-level random intercepts $\theta_j$ is an
+exchangable normal model with mean zero and a scale that is inferred from the
+data (\citet{gelman2014bayesian}). The generative model is: 
+%
+\begin{align*}
+  \sigma & \sim \mathcal{N}^+(0, s) \\
+  \theta_j & \sim \mathcal{N}(\mu, \sigma)
+\end{align*}
+%
+In keeping with the sentiment that all available information should be encoded
+in the prior, group-level measurements, $x$, should be encoded into the prior for
+group-level intercepts as well. It is intuitively appealing to favor model
+configurations that allow for positive correlation between groups that are
+similar in measured group-level covariates. Ideally we would learn the exact
+magnitude and form of the correlation between group means $\theta_j$ from the
+data. GPs allow a principled way to do so. Instead of an exchangable normal
+prior for the group-level means, we parameterize our prior:
+%
+\begin{align*}
+  \sigma & \sim \mathcal{N}^+(0, s) \\
+  \alpha & \sim p(\phi) \\
+  \ell & \sim g(\rho) \\
+  \theta & \sim \mathcal{GP}(\mu, K_{\alpha, \ell}(x, x))
+\end{align*}
+%
+where $p(\phi)$ and $g(\rho)$ are densities with positive support and $\phi$ and
+$\rho$ are known parameters of these densities.
+
+\subsection{GP regression}
+
+In a regression setting we typically endeavour to learn a regression function,
+or a conditional mean, from the data. With a Gaussian likelihood we have the
+following model:
+%
+\begin{align*}
+  \sigma & \sim \mathcal{N}^+(0, s) \\
+  \beta & \sim p(\rho), \beta \in \R^P \\
+  f(x_i) & = \textstyle \sum_{p=1}^P \beta_p \nu_p(x_i) \\
+  y_i & \sim \mathcal{N}\lp f(x_i),
+  \sigma\rp 
+\end{align*}
+%
+Linear regression limits our exploration to linear functions of the
+coefficients, $\beta_p$, and functions, $\nu_p(x)$ of the predictor. In fitting
+a sequence of increasingly complex models (\citet{gelman2014bayesian}), the
+modeler defines which transformations of the predictor to include in the design
+matrix. There is much discretion left to the modeler as to how to build out the
+regression model. Ideally we would dispassionately specify the model expansion
+process. In fact, an optimal approach might be to allow for all possible
+transformations (say, $P \rightarrow \infty$) of the predictor and to learn the
+weight afforded to each transformation. GPs allow us to do just that.
+%
+\begin{align*}
+  \sigma & \sim \mathcal{N}^+(0, s) \\
+  \alpha & \sim p(\phi) \\
+  \ell & \sim g(\rho) \\
+  f(x) & \sim \mathcal{GP}(\mu, K_{\alpha, \ell}(x, x)) \\
+  y_i & \sim \mathcal{N}\lp f(x_i),
+  \sigma\rp  \\
+  i \in & \{1, \dots, N\}
+\end{align*}
+%
+The $f(x) \sim \mathcal{GP}(\mu, K_{\alpha, \ell}(x, x))$ above is equivalent to
+$f(x_i)  = \textstyle \lim_{P \to \infty} \sum_{p=1}^P \beta_p \xi_p(x_i)$
+(Dan, can you expand on what different kernel choices mean about different bases?)
+Choosing the kernel $k(x, x)$ that defines $K(x, x)$ will yield sets of 
+basis functions. One set of basis functions, $\xi_p$, are the eigenfunctions 
+of the covariance kernel (\citet{rasmussen2005gaussian}).
+
+\section{Difficulties inferring hyperparameters in GPs}
+
+GPs allow for princpled priors in rich Bayesian models. They are flexible and
+expressive. Its flexibility comes at a price, however, which is that in
+practice learning $\ell$ and $\alpha$ is hard in some settings, and impossible
+in others. This is true for both the exponentiated quadratic and the 
+Mat\'{e}rn. The literature is sparse for the challenges in estimating hyperparameters
+for 
+
+\begin{itemize}
+  \item Popular classes of kernels under finite data have problems
+  \item not often discussed, typically just turn crank on MML and predict
+  \item 
+\end{itemize}
+
+\subsection{Mat\'{e}rn}
+
+\begin{itemize}
+  \item We know Matern should be dangerous in asymptotic regime from theory (ridge!)
+  \item talk about theory for Matern nonidentifiability (equivalent measures, infill)
+  \item Matern also resolves ridge in finite data regime
+\end{itemize}
+
+\subsection{Exp. quad}
+
+\begin{itemize}
+  \item Exp quad has weakly consistent estimators for params
+  \item Still have finite data problems, and look, we have the ridge!
+  \item Infill asymptotics under which weak consistency is proved are far away
+  \item Need very fine data to inform full parameter space
+  \item We put spectral density point in this section as intuition behind ridge
+\end{itemize}
+
+\section{Requirements for prior specs}
+
+\subsection{Length-scale reqs}
+
+Positive support, zero avoiding. Cut off small length-scales, cut off large
+length-scales.
+
+\begin{itemize}
+  \item Knowledge of the process motivates upper and lower bounds (physical)
+  \item Knowledge of design of the sampling scheme for GP (no matter how much data, can't sample below certain length-scales)
+  \item Largest and smallest covariate range motivated prior for computational stability
+\end{itemize}
+
+\begin{itemize}
+  \item Gamma, log-normal
+  \item inv gamma
+  \item GIG
+  \item half-cauchy (We know these are bad, but they're commonly used)
+  \item half-normal (We know these are bad, but they're commonly used)
+\end{itemize}
+
+Ways to think about informativeness of priors
+
+\begin{itemize}
+  \item Effective degrees of freedom (alpha plus rho)
+  \item Zero crossings (only exist for 1D for smooth GPs, because rough GPs
+    don't have them) 
+  \item Higher level upcrossings $\alpha$ $\rho$ interaction
+\end{itemize}
+
+\subsection{Marginal signal scale}
+
+Due to ridge, rho / alpha interaction necessitates thinking about prior
+for alpha and the joint prior for rho and alhpa.
+
+The light tail on alpha, cuts off big values of rho, which is how the 
+priors interact.
+
+\subsection{Likelihood parameters}
+
+Normal -> $\sigma$
+NB -> overdispersion
+
+In GP regression where likelihood is normal, we also have ID problems
+with alpha interacting with sigma, and this is common and well-understood
+in Gaussian noise and Gaussian latent variable models.
+
+Perhaps it would most sense to think of total variance of $Y$ and SN ratio
+deriving $\alpha$ and $\sigma$ from these qtys.
+
+\section{Experiments}
+
+\subsection{n = 10}
+
+\subsection{n = 300}
+
+\section{Discussion}
+
+\subsection{Lessons in 1D}
+
+Hopefully, shapes of priors don't matter, only the upper and lower bounds. We
+see that fat tailed and thin tailed distributions that agree on small
+lenghth-scales lead to nearly equivalent posteriors that don't have the ridges.
+This is because we have sigma tail prior cutting off the section that part of
+rho space.
+
+\subsection{Extensions to higher dims}
+
+In D > 1, GPs present even larger challenges because of the fact that the
+number of interpolating functions grows exponentially. Additionally, 
+infill becomes that much more out of reach because of the peculiar
+problem that most points are far away from one another in high dimensions.
+
+
+\bibliographystyle{plainnat}
+\bibliography{bib_inf_priors}
+
+\end{document}
