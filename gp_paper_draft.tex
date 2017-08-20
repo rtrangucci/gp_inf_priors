@@ -356,19 +356,17 @@ of the covariance kernel (\citet{rasmussen2005gaussian}).
 \section{Difficulties inferring hyperparameters in GPs}
 
 GPs allow for princpled priors in rich Bayesian models. They are flexible and
-expressive. Its flexibility comes at a price, however, which is that in
+expressive. 
+
+Its flexibility comes at a price, however, which is that in
 practice learning $\ell$ and $\alpha$ is hard in some settings, and impossible
-in others. This is true for both the exponentiated quadratic and the 
-Mat\'{e}rn. The literature is sparse for the challenges in estimating hyperparameters
-for 
+in others. This is true for both the exponentiated quadratic and the
+Mat\'{e}rn. 
 
-\begin{itemize}
-  \item Popular classes of kernels under finite data have problems
-  \item not often discussed, typically just turn crank on MML and predict
-  \item 
-\end{itemize}
+  \subsection{Mat\'{e}rn}
 
-\subsection{Mat\'{e}rn}
+The Mat\'{e}rn kernel is suggested as a good default kernel for many problems
+because it allows for varying 
 
 \begin{itemize}
   \item We know Matern should be dangerous in asymptotic regime from theory (ridge!)
