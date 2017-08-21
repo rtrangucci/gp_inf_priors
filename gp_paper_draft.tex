@@ -14,7 +14,15 @@
 
 \usepackage[utf8]{inputenc} % allow utf-8 input
 \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{natbib}
 \usepackage{hyperref}       % hyperlinks
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    filecolor=black,
+    urlcolor=black,
+}
 \usepackage{url}            % simple URL typesetting
 \usepackage{booktabs}       % professional-quality tables
 \usepackage{amsfonts}       % blackboard math symbols
@@ -458,7 +466,8 @@ infill becomes that much more out of reach because of the peculiar
 problem that most points are far away from one another in high dimensions.
 
 
-\bibliographystyle{plainnat}
+%\bibliographystyle{plainnat}
+\bibliographystyle{apalike}
 \bibliography{bib_inf_priors}
 
 \end{document}
