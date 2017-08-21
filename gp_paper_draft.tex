@@ -144,16 +144,12 @@
 
 \section{Introduction}
 
-As noted by many authors (\citet{flaxman2015fast},
-\citet{stein2012interpolation}, \citet{rasmussen2005gaussian},
-\citet{fuglstad2015interpretable}), learning hyperparameters in Gaussian
+As noted by many authors \citep{flaxman2015fast,stein2012interpolation,rasmussen2005gaussian,fuglstad2015interpretable}, learning hyperparameters in Gaussian
 process (GP) kernels is notoriously hard. The preponderance of literature has
 focused estimating hyperparameters using marginal maximum likelihood for point
-estimation (\citet{stein2012interpolation}, \citet{rasmussen2005gaussian},
-\citet{warnes1987problems}), and the asymptotic properties of posterior
-conditional mean functions in GP regressions (\citet{seeger2008information},
-\citet{stein2012interpolation}, \citet{rasmussen2005gaussian},
-\citet{williams2000upper}) with some exceptions such as
+estimation \citep{stein2012interpolation,rasmussen2005gaussian,warnes1987problems}, and the asymptotic properties of posterior
+conditional mean functions in GP regressions \citep{seeger2008information,
+stein2012interpolation,rasmussen2005gaussian,williams2000upper} with some exceptions such as
 \citet{neal1998regression} and \citet{vanhatalo2013gpstuff}. As applied
 statisticians, we face datasets with finitely many observations. As such there
 will be many sets of hyperparameters that are consistent with our data;
@@ -161,7 +157,7 @@ selecting any one point will lead to overfitting and poor out-of-sample
 predictions. Instead, we advocate placing priors over hyperparameters and
 integrate over our uncertainty when making predictions for new data. The
 empirical advantage of full Bayesian inference versus point estimation are
-well-documented (\citet{vehtariloo}). In order to do this we need to engineer
+well-documented \citep[e.g.][]{Vanhatalo+Pietilainen+Vehtari:2010,vehtariloo}. In order to do this we need to engineer
 principled priors that regularize the Gaussian process sufficiently to admit
 practical fitting without compromising its statistical utility. In this paper
 we'll investigate the consequences of priors on hyperaparamters from
@@ -294,7 +290,7 @@ If our data arise from a hierarchy we would do well to encode hierarchical
 structure into our prior as the benefits are widely noted (\citet{}). An
 oft-recommended prior to put on $J$ group-level random intercepts $\theta_j$ is an
 exchangable normal model with mean zero and a scale that is inferred from the
-data (\citet{gelman2014bayesian}). The generative model is: 
+data \citep{Gelman+etal+BDA3:2013}. The generative model is: 
 %
 \begin{align*}
   \sigma & \sim \mathcal{N}^+(0, s) \\
