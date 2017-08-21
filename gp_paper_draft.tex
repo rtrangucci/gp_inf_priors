@@ -262,12 +262,12 @@ $\Exp{C_u | \theta}$ for the exponentiated quadratic kernel:
 $\Exp{C_u | \theta}$ for the Mat\'{e}rn 5/2 kernel is:
 % Add formula
 We can see that at $u = 0$, we are left with $\Exp{C_u | \alpha, \ell} = T /
-\pi \ell$.  This characteristic is only valid for kernels with finite second
-derivatives at zero. Kernels like the Mat\'{e}rn 3/2 and the exponential kernel
-(also known as as a Mat\'{e}rn 1/2) have fewer than two derivatives.
-Conditional on having an upcrossing at $x$, if our kernel does not have a
-finite second derivative, there are infinitely many upcrossings in the interval
-$x + \delta x$.
+\pi \ell$.  This characteristic is only valid for processes that are twice
+mean-square differentiable at zero. Kernels like the Mat\'{e}rn 3/2 and the
+exponential kernel (also known as as a Mat\'{e}rn 1/2) have fewer than two
+derivatives.  Conditional on having an upcrossing at $x$, if our kernel does
+not have a finite second derivative, there are infinitely many upcrossings in
+the interval $x + \delta x$.
 
 When concerned with expected numbers of crossings away from zero, $\alpha$ and
 $\ell$ are conflated.  This means that we would not be able to identify
@@ -278,15 +278,16 @@ $\alpha$ and $\ell$ from data as we will soon see.
 
 \subsection{To marginalize or to maximize?}
 
-With 
+As noted by \citet{vehtariloo}, there is e:w
 
-\subsection{GP as priors}
+\subsection{GPs as priors}
 
-If our data arise from a hierarchy we would do well to encode hierarchical
-structure into our prior as the benefits are widely noted (\citet{}). An
-oft-recommended prior to put on $J$ group-level random intercepts $\theta_j$ is an
-exchangable normal model with mean zero and a scale that is inferred from the
-data (\citet{gelman2014bayesian}). The generative model is: 
+GPs are a good way parameterize priors for random intercepts in a hierarchical
+model. When our data can plausibly be generated from a hierarchy we would do
+well to encode hierarchical structure into our prior (\citet{}). An
+oft-used prior to put on $J$ group-level random intercepts $\theta_j$ is
+an exchangable normal model with mean zero and a scale that is inferred from
+the data (\citet{gelman2014bayesian}). The generative model is: 
 %
 \begin{align*}
   \sigma & \sim \mathcal{N}^+(0, s) \\
@@ -297,8 +298,8 @@ In keeping with the sentiment that all available information should be encoded
 in the prior, group-level measurements, $x$, should be encoded into the prior for
 group-level intercepts as well. It is intuitively appealing to favor model
 configurations that allow for positive correlation between groups that are
-similar in measured group-level covariates. Ideally we would learn the exact
-magnitude and form of the correlation between group means $\theta_j$ from the
+similar in measured group-level covariates. Ideally we would learn the 
+magnitude of the correlation between group means $\theta_j$ from the
 data. GPs allow a principled way to do so. Instead of an exchangable normal
 prior for the group-level means, we parameterize our prior:
 %
@@ -309,14 +310,14 @@ prior for the group-level means, we parameterize our prior:
   \theta & \sim \mathcal{GP}(\mu, K_{\alpha, \ell}(x, x))
 \end{align*}
 %
-where $p(\phi)$ and $g(\rho)$ are densities with positive support and $\phi$ and
-$\rho$ are known parameters of these densities.
+where $p(\phi)$ and $g(\rho)$ are densities with support on $\R^+$ and $\phi$
+and $\rho$ are the known parameters of these densities.
 
-\subsection{GP regression}
+\subsection{GPs for regression}
 
-In a regression setting we typically endeavour to learn a regression function,
-or a conditional mean, from the data. With a Gaussian likelihood we have the
-following model:
+The most common setting for a GP is a regression problem, where we endeavour to
+learn a conditional mean function $f(x)$ from the data. With a Gaussian
+likelihood we have the following model:
 %
 \begin{align*}
   \sigma & \sim \mathcal{N}^+(0, s) \\
